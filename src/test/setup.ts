@@ -1,5 +1,17 @@
-import { vi } from "vitest"
+import { handlers } from "@/api/handlers"
 import "@testing-library/jest-dom/vitest"
+import { cleanup } from "@testing-library/react"
+import { setupServer } from "msw/node"
+import { afterAll, afterEach, beforeAll, vi } from "vitest"
+
+const server = setupServer(...handlers)
+
+beforeAll(() => server.listen())
+afterAll(() => server.close())
+afterEach(() => {
+  server.resetHandlers()
+  cleanup()
+})
 
 // Mock window.scrollTo
 window.scrollTo = vi.fn()
