@@ -1,38 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
+import { HomePage } from "@/pages/home/home-page"
 
 export const Route = createFileRoute("/")({
   component: HomePage,
 })
-
-function HomePage() {
-  return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 p-8">
-      <h1 className="text-4xl font-bold tracking-tight">React Modern Stack</h1>
-      <p className="max-w-md text-center text-muted-foreground">
-        A production-ready template with React 19, TanStack Router, TanStack
-        Query, shadcn/ui, and Tailwind CSS v4.
-      </p>
-      <div className="flex gap-4">
-        <Button variant="link" asChild>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            TanStack Router
-          </a>
-        </Button>
-        <Button variant="link" asChild>
-          <a
-            href="https://ui.shadcn.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            shadcn/ui
-          </a>
-        </Button>
-      </div>
-    </div>
-  )
-}
