@@ -1,0 +1,5 @@
+set -e
+
+pnpm run lint
+pnpm run test:run
+pnpm run build
