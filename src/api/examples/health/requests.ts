@@ -1,5 +1,5 @@
 import { api } from "@/api/api"
-import { EXAMPLE_HEALTH_ENDPOINT } from "@/api/examples/health/endpoints"
+import { healthPath } from "@/api/examples/health/endpoints"
 import {
   healthResponseSchema,
   type HealthResponse,
@@ -8,13 +8,13 @@ import { throwError } from "@/api/throw-error"
 
 export async function healthRequest(): Promise<HealthResponse> {
   const response = await api
-    .get(EXAMPLE_HEALTH_ENDPOINT)
+    .get(healthPath)
     .json<HealthResponse>()
     .catch((error) =>
       throwError({
         message: "Health request failed",
         error,
-        logData: { endpoint: EXAMPLE_HEALTH_ENDPOINT },
+        logData: { path: healthPath },
       })
     )
 
@@ -23,7 +23,7 @@ export async function healthRequest(): Promise<HealthResponse> {
     throwError({
       message: "Health response validation failed",
       error: parsed.error,
-      logData: { endpoint: EXAMPLE_HEALTH_ENDPOINT, response },
+      logData: { path: healthPath, response },
     })
   }
 

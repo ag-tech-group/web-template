@@ -7,5 +7,5 @@ interface ThrowErrorOptions {
 export function throwError({ message, error, logData }: ThrowErrorOptions): never {
   // Inject your logger here (e.g., Sentry, DataDog, custom logger)
   console.error(message, { error, ...logData })
-  throw error instanceof Error ? error : new Error(message)
+  throw error instanceof Error ? error : new Error(message, { cause: error })
 }

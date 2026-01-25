@@ -1,3 +1,2 @@
-import { baseUrl } from "@/api/api"
-
-export const EXAMPLE_HEALTH_ENDPOINT = `${baseUrl}/health`
+// Path only - used with ky api client (prefixUrl is applied automatically)
+export const healthPath = "health"
