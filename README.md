@@ -12,6 +12,8 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 - **shadcn/ui** - Composable component library
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Zod v4** - TypeScript-first schema validation
+- **ky** - Elegant HTTP client
+- **MSW** - API mocking for tests and development
 
 ## Features
 
@@ -31,6 +33,7 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 - Node.js 18+ and npm/pnpm/yarn
 
 ### Installation
+
 ```bash
 # Clone the repository
 git clone https://github.com/yourusername/your-repo-name.git
@@ -45,6 +48,7 @@ yarn install
 ```
 
 ### Development
+
 ```bash
 # Start the development server
 npm run dev
@@ -57,6 +61,7 @@ yarn dev
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ### Build
+
 ```bash
 # Create a production build
 npm run build
@@ -67,6 +72,7 @@ yarn build
 ```
 
 ### Preview
+
 ```bash
 # Preview the production build locally
 npm run preview
@@ -77,12 +83,19 @@ yarn preview
 ```
 
 ## Project Structure
+
 ```
 ├── src/
+│   ├── api/            # API client, handlers, and endpoint definitions
+│   │   ├── api.ts      # ky client configuration
+│   │   ├── handlers.ts # MSW handlers (aggregated)
+│   │   └── examples/   # Example API patterns
 │   ├── components/     # Reusable React components
+│   │   └── ui/         # Installed shadcn/ui components
 │   ├── pages/          # Page components
 │   ├── routes/         # TanStack Router routes
 │   ├── lib/            # Utility functions
+│   ├── test/           # Test setup and utilities
 │   └── main.tsx        # Application entry point
 ├── public/             # Static assets
 └── package.json
@@ -91,6 +104,7 @@ yarn preview
 ## Adding Components
 
 This template uses shadcn/ui. To add new components:
+
 ```bash
 npx shadcn-ui@latest add button
 npx shadcn-ui@latest add card
@@ -102,11 +116,12 @@ npx shadcn-ui@latest add card
 ### TanStack Query
 
 Pre-configured for efficient server state management:
+
 ```typescript
-import { useQuery } from '@tanstack/react-query'
+import { useQuery } from "@tanstack/react-query"
 
 const { data, isLoading } = useQuery({
-  queryKey: ['todos'],
+  queryKey: ["todos"],
   queryFn: fetchTodos,
 })
 ```
@@ -114,10 +129,11 @@ const { data, isLoading } = useQuery({
 ### TanStack Router
 
 Type-safe routing with automatic code splitting:
-```typescript
-import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/about')({
+```typescript
+import { createFileRoute } from "@tanstack/react-router"
+
+export const Route = createFileRoute("/about")({
   component: About,
 })
 ```
@@ -125,8 +141,9 @@ export const Route = createFileRoute('/about')({
 ### Zod Validation
 
 Runtime type validation for forms and API responses:
+
 ```typescript
-import { z } from 'zod'
+import { z } from "zod"
 
 const UserSchema = z.object({
   name: z.string(),
@@ -150,3 +167,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [shadcn/ui](https://ui.shadcn.com/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Zod](https://zod.dev/)
+- [ky](https://github.com/sindresorhus/ky)
+- [MSW](https://mswjs.io/)
