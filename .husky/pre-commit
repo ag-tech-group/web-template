@@ -1,5 +1,6 @@
 set -e
 
+pnpm lint-staged
 pnpm run lint
 pnpm run test:run
 pnpm run build

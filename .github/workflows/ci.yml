@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Type check
+        run: pnpm tsc --noEmit
+
+      - name: Test
+        run: pnpm test:run
+
+  # Verifies that generated API types are up-to-date with the backend
+  # Requires OPENAPI_URL to be set (e.g., to a staging backend)
+  verify-api-types:
+    runs-on: ubuntu-latest
+    if: ${{ vars.OPENAPI_URL != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate API types
+        run: pnpm generate-api
+        env:
+          OPENAPI_URL: ${{ vars.OPENAPI_URL }}
+
+      - name: Verify generated types are up-to-date
+        run: |
+          if [ ! -d src/api/generated ]; then
+            echo "ERROR: Expected directory 'src/api/generated' does not exist."
+            echo "Ensure 'pnpm generate-api' creates this directory and commit the generated types."
+            exit 1
+          fi
+          if [ -n "$(git status --porcelain src/api/generated/)" ]; then
+            echo "ERROR: Generated API types are out of date!"
+            echo "Run 'pnpm generate-api' and commit the changes."
+            git diff src/api/generated/
+            exit 1
+          fi
