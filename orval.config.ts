@@ -1,12 +1,15 @@
 import { defineConfig } from "orval"
 
+const input = process.env.OPENAPI_URL || "http://localhost:8000/openapi.json"
+
 export default defineConfig({
+  // React Query hooks
   backend: {
-    input: process.env.OPENAPI_URL || "http://localhost:8000/openapi.json",
+    input,
     output: {
       mode: "tags-split",
-      target: "./src/api/generated",
-      schemas: "./src/api/generated/schemas",
+      target: "./src/api/generated/hooks",
+      schemas: "./src/api/generated/types",
       client: "react-query",
       httpClient: "fetch",
       override: {
@@ -19,6 +22,15 @@ export default defineConfig({
           useMutation: true,
         },
       },
+    },
+  },
+  // Zod schemas for runtime validation
+  zod: {
+    input,
+    output: {
+      mode: "tags-split",
+      target: "./src/api/generated/zod",
+      client: "zod",
     },
   },
 })

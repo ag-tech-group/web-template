@@ -17,6 +17,8 @@ describe("HomePage", () => {
     expect(
       screen.getByRole("link", { name: /tanstack router/i })
     ).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: /shadcn\/ui/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: /shadcn\/ui/i })
+    ).toBeInTheDocument()
   })
 })

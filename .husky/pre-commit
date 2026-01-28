@@ -1,5 +1,6 @@
 set -e
 
+pnpm run format:check
 pnpm run lint
 pnpm run test:run
 pnpm run build

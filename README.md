@@ -96,9 +96,9 @@ pnpm generate-api
 
 This generates:
 
-- React Query hooks (`useQuery`/`useMutation`) for each endpoint
-- TypeScript types for all request/response schemas
-- Organized by API tags in `src/api/generated/`
+- React Query hooks (`useQuery`/`useMutation`) in `src/api/generated/hooks/`
+- TypeScript types for all request/response schemas in `src/api/generated/types/`
+- Zod schemas for runtime validation in `src/api/generated/zod/`
 
 ### Configuration
 
@@ -108,8 +108,10 @@ For CI/CD, set the `OPENAPI_URL` repository variable to point to your staging/de
 
 ### Usage
 
+**React Query hooks:**
+
 ```typescript
-import { useListRacersRacersGet } from "@/api/generated/racers/racers"
+import { useListRacersRacersGet } from "@/api/generated/hooks/racers/racers"
 
 function RacerList() {
   const { data, isLoading, error } = useListRacersRacersGet()
@@ -127,6 +129,18 @@ function RacerList() {
 }
 ```
 
+**Zod schemas for validation:**
+
+```typescript
+import { CreateRacerRacersPostBody } from "@/api/generated/zod/racers/racers"
+
+// Validate form data before submitting
+const result = CreateRacerRacersPostBody.safeParse(formData)
+if (!result.success) {
+  console.error(result.error.issues)
+}
+```
+
 ## Project Structure
 
 ```
@@ -134,7 +148,10 @@ function RacerList() {
 │   ├── api/            # API client, handlers, and endpoint definitions
 │   │   ├── api.ts      # ky client configuration
 │   │   ├── orval-client.ts # Custom adapter for orval (uses ky)
-│   │   ├── generated/  # Auto-generated API hooks and types (do not edit)
+│   │   ├── generated/  # Auto-generated (do not edit)
+│   │   │   ├── hooks/  # React Query hooks
+│   │   │   ├── types/  # TypeScript types
+│   │   │   └── zod/    # Zod schemas
 │   │   ├── handlers.ts # MSW handlers (aggregated)
 │   │   └── examples/   # Example API patterns
 │   ├── components/     # Reusable React components
