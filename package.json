@@ -9,6 +9,7 @@
   "scripts": {
     "dev": "vite",
     "build": "pnpm run generate-routes && tsc -b && vite build",
+    "generate-api": "orval",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -58,6 +59,7 @@
     "husky": "^9.1.7",
     "jsdom": "^26.0.0",
     "msw": "^2.12.7",
+    "orval": "^8.1.0",
     "prettier": "^3.4.0",
     "prettier-plugin-tailwindcss": "^0.6.0",
     "tailwindcss": "^4.1.0",

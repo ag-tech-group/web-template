@@ -13,6 +13,7 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Zod v4** - TypeScript-first schema validation
 - **ky** - Elegant HTTP client
+- **orval** - OpenAPI client generator (React Query hooks + TypeScript types)
 - **MSW** - API mocking for tests and development
 
 ## Features
@@ -20,6 +21,7 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 - ⚡️ Lightning-fast HMR with Vite
 - 🎯 Type-safe routing with TanStack Router
 - 🔄 Powerful async state management with TanStack Query
+- 🔗 Auto-generated API client from OpenAPI specs via orval
 - ✅ Runtime validation with Zod
 - 🎨 Beautiful, accessible components with shadcn/ui
 - 🔧 Utility-first styling with Tailwind CSS v4
@@ -40,11 +42,10 @@ git clone https://github.com/yourusername/your-repo-name.git
 cd your-repo-name
 
 # Install dependencies
-npm install
-# or
 pnpm install
-# or
-yarn install
+
+# Generate API client (requires backend running, see API Client Generation section)
+pnpm generate-api
 ```
 
 ### Development
@@ -82,12 +83,58 @@ pnpm preview
 yarn preview
 ```
 
+## API Client Generation
+
+This template uses [orval](https://orval.dev/) to generate type-safe React Query hooks from your backend's OpenAPI specification.
+
+### Generate API Client
+
+```bash
+# Start your backend server first, then:
+pnpm generate-api
+```
+
+This generates:
+
+- React Query hooks (`useQuery`/`useMutation`) for each endpoint
+- TypeScript types for all request/response schemas
+- Organized by API tags in `src/api/generated/`
+
+### Configuration
+
+The orval configuration is in `orval.config.ts`. By default, it fetches the OpenAPI spec from `http://localhost:8000/openapi.json`.
+
+For CI/CD, set the `OPENAPI_URL` repository variable to point to your staging/dev backend. The CI workflow will verify that generated types are up-to-date.
+
+### Usage
+
+```typescript
+import { useListRacersRacersGet } from "@/api/generated/racers/racers"
+
+function RacerList() {
+  const { data, isLoading, error } = useListRacersRacersGet()
+
+  if (isLoading) return <div>Loading...</div>
+  if (error) return <div>Error loading racers</div>
+
+  return (
+    <ul>
+      {data?.data.map((racer) => (
+        <li key={racer.id}>{racer.name}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
 ## Project Structure
 
 ```
 ├── src/
 │   ├── api/            # API client, handlers, and endpoint definitions
 │   │   ├── api.ts      # ky client configuration
+│   │   ├── orval-client.ts # Custom adapter for orval (uses ky)
+│   │   ├── generated/  # Auto-generated API hooks and types (do not edit)
 │   │   ├── handlers.ts # MSW handlers (aggregated)
 │   │   └── examples/   # Example API patterns
 │   ├── components/     # Reusable React components
@@ -168,4 +215,5 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Zod](https://zod.dev/)
 - [ky](https://github.com/sindresorhus/ky)
+- [orval](https://orval.dev/)
 - [MSW](https://mswjs.io/)

@@ -1,0 +1,3 @@
+# Mark generated files as generated (collapses in PR diffs)
+src/api/generated/** linguist-generated=true
+src/routeTree.gen.ts linguist-generated=true
