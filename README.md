@@ -13,8 +13,9 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Zod v4** - TypeScript-first schema validation
 - **ky** - Elegant HTTP client
-- **orval** - OpenAPI client generator (React Query hooks + TypeScript types)
+- **orval** - OpenAPI client generator (React Query hooks, TypeScript types, Zod schemas, MSW mocks)
 - **MSW** - API mocking for tests and development
+- **lint-staged** - Auto-format staged files on commit
 
 ## Features
 
@@ -32,7 +33,8 @@ A modern, production-ready React starter template built with Vite, TanStack Rout
 
 ### Prerequisites
 
-- Node.js 18+ and npm/pnpm/yarn
+- Node.js 24+
+- pnpm
 
 ### Installation
 
@@ -44,19 +46,16 @@ cd your-repo-name
 # Install dependencies
 pnpm install
 
-# Generate API client (requires backend running, see API Client Generation section)
+# (Optional) Generate API client
+# Requires a running backend with an OpenAPI spec; you can skip this for now
+# and run it later once your backend is up (see "API Client Generation" section).
 pnpm generate-api
 ```
 
 ### Development
 
 ```bash
-# Start the development server
-npm run dev
-# or
 pnpm dev
-# or
-yarn dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
@@ -64,23 +63,13 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 ### Build
 
 ```bash
-# Create a production build
-npm run build
-# or
 pnpm build
-# or
-yarn build
 ```
 
 ### Preview
 
 ```bash
-# Preview the production build locally
-npm run preview
-# or
 pnpm preview
-# or
-yarn preview
 ```
 
 ## API Client Generation
@@ -96,9 +85,10 @@ pnpm generate-api
 
 This generates:
 
-- React Query hooks (`useQuery`/`useMutation`) in `src/api/generated/hooks/`
+- React Query hooks (`useQuery`/`useMutation`) in `src/api/generated/hooks/` - **with integrated Zod validation**
 - TypeScript types for all request/response schemas in `src/api/generated/types/`
-- Zod schemas for runtime validation in `src/api/generated/zod/`
+- Standalone Zod schemas in `src/api/generated/zod/` (for form validation, manual use)
+- MSW mock handlers for testing in `src/api/generated/mocks/`
 
 ### Configuration
 
@@ -108,38 +98,41 @@ For CI/CD, set the `OPENAPI_URL` repository variable to point to your staging/de
 
 ### Usage
 
-**React Query hooks:**
+After generating, import hooks and schemas from `src/api/generated/`. The generated code is organized by API tags.
+
+**React Query hooks (with automatic Zod validation):**
 
 ```typescript
-import { useListRacersRacersGet } from "@/api/generated/hooks/racers/racers"
+// Import generated hooks (paths depend on your API's tags and endpoints)
+import { useGetUsers, useCreateUser } from "@/api/generated/hooks/users/users"
 
-function RacerList() {
-  const { data, isLoading, error } = useListRacersRacersGet()
+function UserList() {
+  // Responses are automatically validated with Zod
+  // Invalid responses will throw a ZodError
+  const { data, isLoading, error } = useGetUsers()
 
   if (isLoading) return <div>Loading...</div>
-  if (error) return <div>Error loading racers</div>
+  if (error) return <div>Error: {error.message}</div>
 
-  return (
-    <ul>
-      {data?.data.map((racer) => (
-        <li key={racer.id}>{racer.name}</li>
-      ))}
-    </ul>
-  )
+  // Response structure depends on your OpenAPI spec
+  return <pre>{JSON.stringify(data, null, 2)}</pre>
 }
 ```
 
-**Zod schemas for validation:**
+**Standalone Zod schemas (for form validation, etc.):**
 
 ```typescript
-import { CreateRacerRacersPostBody } from "@/api/generated/zod/racers/racers"
+// Import standalone Zod schemas for manual validation
+import { CreateUserBody } from "@/api/generated/zod/users/users"
 
 // Validate form data before submitting
-const result = CreateRacerRacersPostBody.safeParse(formData)
+const result = CreateUserBody.safeParse(formData)
 if (!result.success) {
   console.error(result.error.issues)
 }
 ```
+
+> **Note:** The exact imports and response structures depend on your backend's OpenAPI specification. Check the generated files in `src/api/generated/` after running `pnpm generate-api`.
 
 ## Project Structure
 
@@ -151,9 +144,9 @@ if (!result.success) {
 │   │   ├── generated/  # Auto-generated (do not edit)
 │   │   │   ├── hooks/  # React Query hooks
 │   │   │   ├── types/  # TypeScript types
-│   │   │   └── zod/    # Zod schemas
-│   │   ├── handlers.ts # MSW handlers (aggregated)
-│   │   └── examples/   # Example API patterns
+│   │   │   ├── zod/    # Zod schemas
+│   │   │   └── mocks/  # MSW mock handlers
+│   │   └── handlers.ts # MSW handlers aggregator
 │   ├── components/     # Reusable React components
 │   │   └── ui/         # Installed shadcn/ui components
 │   ├── pages/          # Page components

@@ -21,16 +21,34 @@ export default defineConfig({
           useQuery: true,
           useMutation: true,
         },
+        zod: {
+          strict: {
+            response: true,
+            body: true,
+            param: true,
+            query: true,
+          },
+        },
       },
     },
   },
-  // Zod schemas for runtime validation
+  // Standalone Zod schemas (for form validation, manual use, etc.)
+  // Note: React Query hooks above also have integrated Zod validation via zod.strict
   zod: {
     input,
     output: {
       mode: "tags-split",
       target: "./src/api/generated/zod",
       client: "zod",
+    },
+  },
+  // MSW mock handlers
+  msw: {
+    input,
+    output: {
+      mode: "tags-split",
+      target: "./src/api/generated/mocks",
+      client: "msw",
     },
   },
 })

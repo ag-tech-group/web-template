@@ -69,6 +69,11 @@ jobs:
 
       - name: Verify generated types are up-to-date
         run: |
+          if [ ! -d src/api/generated ]; then
+            echo "ERROR: Expected directory 'src/api/generated' does not exist."
+            echo "Ensure 'pnpm generate-api' creates this directory and commit the generated types."
+            exit 1
+          fi
           if [ -n "$(git status --porcelain src/api/generated/)" ]; then
             echo "ERROR: Generated API types are out of date!"
             echo "Run 'pnpm generate-api' and commit the changes."
