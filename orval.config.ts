@@ -3,7 +3,7 @@ import { defineConfig } from "orval"
 const input = process.env.OPENAPI_URL || "http://localhost:8000/openapi.json"
 
 export default defineConfig({
-  // React Query hooks
+  // React Query hooks + MSW mocks
   backend: {
     input,
     output: {
@@ -12,6 +12,7 @@ export default defineConfig({
       schemas: "./src/api/generated/types",
       client: "react-query",
       httpClient: "fetch",
+      mock: true,
       override: {
         mutator: {
           path: "./src/api/orval-client.ts",
@@ -40,15 +41,6 @@ export default defineConfig({
       mode: "tags-split",
       target: "./src/api/generated/zod",
       client: "zod",
-    },
-  },
-  // MSW mock handlers
-  msw: {
-    input,
-    output: {
-      mode: "tags-split",
-      target: "./src/api/generated/mocks",
-      client: "msw",
     },
   },
 })
