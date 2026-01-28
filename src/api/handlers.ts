@@ -1,9 +1,11 @@
 import type { HttpHandler } from "msw"
 
-// Import generated MSW handlers after running `pnpm generate-api`
-// Example:
-//   import { getHealthHandlers } from "@/api/generated/mocks/default/default"
-//   import { getRacersHandlers } from "@/api/generated/mocks/racers/racers"
-//   export const handlers: HttpHandler[] = [...getHealthHandlers(), ...getRacersHandlers()]
+/**
+ * Import generated MSW handlers after running `pnpm generate-api`
+ * Example:
+ *  import { getDefaultMock } from "@/api/generated/hooks/default/default.msw"
+ *  import { getRacersMock } from "@/api/generated/hooks/racers/racers.msw"
+ *  export const handlers: HttpHandler[] = [...getDefaultMock(), ...getRacersMock()]
+ */
 
 export const handlers: HttpHandler[] = []
