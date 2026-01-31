@@ -4,7 +4,7 @@ import { renderWithFileRoutes } from "@/test/renderers"
 
 describe("HomePage", () => {
   it("renders the main heading", async () => {
-    await renderWithFileRoutes({ initialLocation: "/" })
+    await renderWithFileRoutes(<div />, { initialLocation: "/" })
 
     expect(
       screen.getByRole("heading", { name: /react modern stack/i })
@@ -12,7 +12,7 @@ describe("HomePage", () => {
   })
 
   it("renders navigation links", async () => {
-    await renderWithFileRoutes({ initialLocation: "/" })
+    await renderWithFileRoutes(<div />, { initialLocation: "/" })
 
     expect(
       screen.getByRole("link", { name: /tanstack router/i })
