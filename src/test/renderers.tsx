@@ -18,6 +18,7 @@ interface RenderOptions {
       isAuthenticated: boolean
       isLoading: boolean
       email: string | null
+      userId: string | null
       login: (email: string) => void
       logout: () => Promise<void>
       checkAuth: () => Promise<void>
@@ -29,6 +30,7 @@ const defaultAuth = {
   isAuthenticated: true,
   isLoading: false,
   email: "test@example.com",
+  userId: "test-user-id",
   login: () => {},
   logout: async () => {},
   checkAuth: async () => {},

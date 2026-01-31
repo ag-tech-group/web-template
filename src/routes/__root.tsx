@@ -26,6 +26,7 @@ interface RouterContext {
     isAuthenticated: boolean
     isLoading: boolean
     email: string | null
+    userId: string | null
     login: (email: string) => void
     logout: () => Promise<void>
     checkAuth: () => Promise<void>

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import {
   createContext,
   useCallback,
@@ -14,6 +15,7 @@ interface AuthContextValue {
   isAuthenticated: boolean
   isLoading: boolean
   email: string | null
+  userId: string | null
   login: (email: string) => void
   logout: () => Promise<void>
   checkAuth: () => Promise<void>
@@ -22,17 +24,21 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const queryClient = useQueryClient()
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [email, setEmail] = useState<string | null>(() =>
     localStorage.getItem(EMAIL_KEY)
   )
+  const [userId, setUserId] = useState<string | null>(null)
 
   const clearState = useCallback(() => {
     localStorage.removeItem(EMAIL_KEY)
     setIsAuthenticated(false)
     setEmail(null)
-  }, [])
+    setUserId(null)
+    queryClient.clear()
+  }, [queryClient])
 
   const logout = useCallback(async () => {
     try {
@@ -61,6 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const user = await res.json()
         setIsAuthenticated(true)
         setEmail(user.email)
+        setUserId(user.id)
         localStorage.setItem(EMAIL_KEY, user.email)
       } else {
         clearState()
@@ -87,11 +94,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       isAuthenticated,
       isLoading,
       email,
+      userId,
       login,
       logout,
       checkAuth,
     }),
-    [isAuthenticated, isLoading, email, login, logout, checkAuth]
+    [isAuthenticated, isLoading, email, userId, login, logout, checkAuth]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
