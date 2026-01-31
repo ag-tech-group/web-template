@@ -21,12 +21,19 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": [
         "warn",
-        { allowConstantExport: true },
+        {
+          allowConstantExport: true,
+          allowExportNames: ["useTheme", "useAuth"],
+        },
       ],
     },
   },
   {
-    files: ["src/test/**/*.{ts,tsx}", "src/components/ui/**/*.{ts,tsx}"],
+    files: [
+      "src/test/**/*.{ts,tsx}",
+      "src/components/ui/**/*.{ts,tsx}",
+      "src/main.tsx",
+    ],
     rules: {
       "react-refresh/only-export-components": "off",
     },
