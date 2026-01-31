@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest"
 import { screen } from "@testing-library/react"
-import { renderRoute } from "@/test/renderers"
+import { renderWithFileRoutes } from "@/test/renderers"
 
 describe("HomePage", () => {
   it("renders the main heading", async () => {
-    await renderRoute("/")
+    await renderWithFileRoutes({ initialLocation: "/" })
 
     expect(
       screen.getByRole("heading", { name: /react modern stack/i })
@@ -12,7 +12,7 @@ describe("HomePage", () => {
   })
 
   it("renders navigation links", async () => {
-    await renderRoute("/")
+    await renderWithFileRoutes({ initialLocation: "/" })
 
     expect(
       screen.getByRole("link", { name: /tanstack router/i })

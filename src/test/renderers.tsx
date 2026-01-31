@@ -8,8 +8,33 @@ import {
 } from "@tanstack/react-router"
 
 import { routeTree } from "@/routeTree.gen"
+import { AuthProvider } from "@/lib/auth"
+import { ThemeProvider } from "@/components/theme-provider"
 
-export async function renderRoute(route: string) {
+interface RenderOptions {
+  initialLocation?: string
+  routerContext?: {
+    auth?: {
+      isAuthenticated: boolean
+      isLoading: boolean
+      email: string | null
+      login: (email: string) => void
+      logout: () => Promise<void>
+      checkAuth: () => Promise<void>
+    }
+  }
+}
+
+const defaultAuth = {
+  isAuthenticated: true,
+  isLoading: false,
+  email: "test@example.com",
+  login: () => {},
+  logout: async () => {},
+  checkAuth: async () => {},
+}
+
+export async function renderWithFileRoutes(options?: RenderOptions) {
   const testQueryClient = new QueryClient({
     defaultOptions: {
       queries: {
@@ -19,23 +44,33 @@ export async function renderRoute(route: string) {
     },
   })
 
-  const memoryHistory = createMemoryHistory({ initialEntries: [route] })
+  const memoryHistory = createMemoryHistory({
+    initialEntries: [options?.initialLocation ?? "/"],
+  })
+
+  const auth = options?.routerContext?.auth ?? defaultAuth
 
   const testRouter = createRouter({
     routeTree,
     history: memoryHistory,
     context: {
       queryClient: testQueryClient,
+      auth,
     },
     defaultPreload: "intent",
     defaultPreloadStaleTime: 0,
+    defaultPendingMinMs: 0,
   })
 
   let result: ReturnType<typeof render>
   await act(async () => {
     result = render(
       <QueryClientProvider client={testQueryClient}>
-        <RouterProvider router={testRouter} />
+        <ThemeProvider>
+          <AuthProvider>
+            <RouterProvider router={testRouter} />
+          </AuthProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     )
   })
@@ -48,7 +83,11 @@ export async function renderRoute(route: string) {
       await act(async () => {
         rerender(
           <QueryClientProvider client={testQueryClient}>
-            <RouterProvider router={testRouter} />
+            <ThemeProvider>
+              <AuthProvider>
+                <RouterProvider router={testRouter} />
+              </AuthProvider>
+            </ThemeProvider>
           </QueryClientProvider>
         )
       })
@@ -58,3 +97,7 @@ export async function renderRoute(route: string) {
     history: memoryHistory,
   }
 }
+
+// Keep backward-compatible alias
+export const renderRoute = (route: string) =>
+  renderWithFileRoutes({ initialLocation: route })
