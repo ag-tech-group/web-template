@@ -1,13 +1,13 @@
-import { describe, it, expect } from "vitest"
-import { screen } from "@testing-library/react"
 import { renderWithFileRoutes } from "@/test/renderers"
+import { screen } from "@testing-library/react"
+import { describe, expect, it } from "vitest"
 
 describe("HomePage", () => {
   it("renders the main heading", async () => {
     await renderWithFileRoutes(<div />, { initialLocation: "/" })
 
     expect(
-      screen.getByRole("heading", { name: /react modern stack/i })
+      screen.getByRole("heading", { name: /react stack/i })
     ).toBeInTheDocument()
   })
 

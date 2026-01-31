@@ -1,6 +1,16 @@
-# React Modern Stack Template
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/logo-dark.png">
+  <source media="(prefers-color-scheme: light)" srcset=".github/assets/logo-light.png">
+  <img alt="AG Technology Group" src=".github/assets/logo-light.png" width="200">
+</picture>
 
-A modern, production-ready React starter template built with Vite, TanStack Router, TanStack Query, shadcn/ui, and Tailwind CSS v4. Includes cookie-based auth, dark mode, toast notifications, and security hardening.
+# React Stack Template
+
+[![CI](https://github.com/ag-tech-group/web-template/actions/workflows/ci.yml/badge.svg)](https://github.com/ag-tech-group/web-template/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D24-brightgreen.svg)](https://nodejs.org/)
+
+A production-ready React starter template built with Vite, TanStack Router, TanStack Query, shadcn/ui, and Tailwind CSS v4. Includes cookie-based auth, dark mode, toast notifications, and security hardening.
 
 Designed to pair with [api-template](https://github.com/ag-tech-group/api-template) (FastAPI backend with cookie JWT auth and refresh tokens), but can work with any backend.
 
