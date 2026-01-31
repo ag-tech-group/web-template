@@ -69,6 +69,24 @@ Set `VITE_API_URL=http://localhost:8000` in a `.env` file to connect to a local 
 pnpm build
 ```
 
+## Customizing for Your App
+
+After creating a project from this template, update the following:
+
+- **App name** — Replace `React Modern Stack` with your app name in:
+  - `index.html` (page title)
+  - `src/pages/home/home-page.tsx` (heading and description)
+  - `src/pages/home/home-page.test.tsx` (test assertion)
+- **Package name** — Update `name` in `package.json`
+- **Content Security Policy** — In `index.html`, update the CSP meta tag:
+  - Add your production API domain to `connect-src` (e.g. `https://api.yourapp.com`)
+  - Remove `http://localhost:*` for production builds, or use environment-specific CSP
+  - Consider replacing `'unsafe-inline'` with nonce-based CSP via a Vite plugin like `vite-plugin-csp` for stricter security
+- **localStorage keys** (optional) — Rename the key prefixes if you want app-specific isolation:
+  - `app_theme` in `src/components/theme-provider.tsx`
+  - `app_auth_email` in `src/lib/auth.tsx`
+- **Environment variables** — See [Environment Variables](#environment-variables) for `VITE_API_URL` and `OPENAPI_URL`
+
 ## Authentication
 
 The template includes a complete auth setup designed to work with the companion [api-template](https://github.com/ag-tech-group/api-template):

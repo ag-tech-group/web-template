@@ -46,6 +46,14 @@ declare module "@tanstack/react-router" {
   }
 }
 
+declare module "@tanstack/react-query" {
+  interface Register {
+    mutationMeta: {
+      skipGlobalError?: boolean
+    }
+  }
+}
+
 function App() {
   const auth = useAuth()
   if (auth.isLoading) return null
