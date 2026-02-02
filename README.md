@@ -36,8 +36,11 @@ Designed to pair with [api-template](https://github.com/ag-tech-group/api-templa
 - Dark/light/system theme with localStorage persistence
 - Global mutation error handling with toast notifications
 - Content Security Policy headers
-- 404 not-found page
+- 404 not-found page and root error boundary with retry
 - Auth context available in router for route guards
+- Structured logging (console in dev, JSON in prod)
+- Analytics provider with route tracking
+- Feature flags (fetched from API, env-var fallback)
 - Auto-generated API client from OpenAPI specs via orval
 - Test utilities with configurable auth state
 
@@ -240,14 +243,18 @@ src/
 │   ├── ui/                 # shadcn/ui components (Button, Card, Input, Label)
 │   ├── theme-provider.tsx  # Dark/light/system theme context
 │   ├── theme-toggle.tsx    # Theme cycle button
+│   ├── error-boundary.tsx  # Root error component with retry
 │   └── not-found.tsx       # 404 page
 ├── lib/
+│   ├── analytics.tsx       # AnalyticsProvider + useAnalytics hook
 │   ├── auth.tsx            # AuthProvider + useAuth hook
 │   ├── api-errors.ts       # Error message extraction
+│   ├── feature-flags.tsx   # FeatureFlagProvider + useFeatureFlag hook
+│   ├── logger.ts           # Structured logging abstraction
 │   └── utils.ts            # cn() class merge helper
 ├── pages/                  # Page components
 ├── routes/                 # TanStack Router file-based routes
-│   ├── __root.tsx          # Root layout (Toaster, devtools, NotFound)
+│   ├── __root.tsx          # Root layout (Toaster, devtools, error/404, route tracking)
 │   └── index.tsx           # Home page route
 ├── test/
 │   ├── setup.ts            # Vitest + MSW setup
@@ -265,12 +272,32 @@ npx shadcn-ui@latest add select
 # etc.
 ```
 
+## Logging, Analytics & Feature Flags
+
+### Logger
+
+`src/lib/logger.ts` provides `logger.debug()`, `logger.info()`, `logger.warn()`, and `logger.error()` methods. In development, it writes to the browser console with level filtering. In production, it outputs structured JSON strings (ready to forward to any reporting service).
+
+Set `VITE_LOG_LEVEL` to control the minimum level (default: `debug` in dev, `warn` in prod).
+
+### Analytics
+
+`AnalyticsProvider` wraps the app and exposes a `useAnalytics()` hook with `track()`, `identify()`, and `page()` methods. Route changes are tracked automatically. The default implementation logs to the logger — pass a custom `backend` prop to `AnalyticsProvider` to send events to a real service.
+
+### Feature Flags
+
+`FeatureFlagProvider` fetches flags from the API's `GET /flags` endpoint (cached via TanStack Query, refetches on window focus). If the API call fails, it falls back to `VITE_FEATURE_*` env vars.
+
+Use the `useFeatureFlag("flag_name")` hook or the `<Feature flag="flag_name">` component for conditional rendering.
+
 ## Environment Variables
 
-| Variable       | Description                            | Default                              |
-| -------------- | -------------------------------------- | ------------------------------------ |
-| `VITE_API_URL` | Backend API URL                        | `/api`                               |
-| `OPENAPI_URL`  | OpenAPI spec URL (for code generation) | `http://localhost:8000/openapi.json` |
+| Variable         | Description                                                     | Default                              |
+| ---------------- | --------------------------------------------------------------- | ------------------------------------ |
+| `VITE_API_URL`   | Backend API URL                                                 | `/api`                               |
+| `VITE_LOG_LEVEL` | Minimum log level (debug/info/warn/error)                       | `debug` (dev), `warn` (prod)         |
+| `VITE_FEATURE_*` | Feature flag overrides (e.g. `VITE_FEATURE_NEW_DASHBOARD=true`) | (none)                               |
+| `OPENAPI_URL`    | OpenAPI spec URL (for code generation)                          | `http://localhost:8000/openapi.json` |
 
 `OPENAPI_URL` is only used during development for `pnpm generate-api`. It is not needed in production — the generated files are committed to the repo.
 

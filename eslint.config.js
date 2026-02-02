@@ -23,7 +23,13 @@ export default tseslint.config(
         "warn",
         {
           allowConstantExport: true,
-          allowExportNames: ["useTheme", "useAuth"],
+          allowExportNames: [
+            "useTheme",
+            "useAuth",
+            "useAnalytics",
+            "useFeatureFlag",
+            "useInvalidateFeatureFlags",
+          ],
         },
       ],
     },
