@@ -1,5 +1,7 @@
 import { ThemeProvider } from "@/components/theme-provider"
+import { AnalyticsProvider } from "@/lib/analytics"
 import { AuthProvider } from "@/lib/auth"
+import { FeatureFlagProvider } from "@/lib/feature-flags"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   createMemoryHistory,
@@ -77,8 +79,12 @@ export async function renderWithFileRoutes(
       <QueryClientProvider client={testQueryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <RouterProvider router={testRouter} />
-            {ui}
+            <AnalyticsProvider>
+              <FeatureFlagProvider staticFlags={{}}>
+                <RouterProvider router={testRouter} />
+                {ui}
+              </FeatureFlagProvider>
+            </AnalyticsProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>,

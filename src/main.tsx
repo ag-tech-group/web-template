@@ -9,8 +9,10 @@ import { createRoot } from "react-dom/client"
 import { toast } from "sonner"
 import { ThemeProvider } from "./components/theme-provider"
 import "./index.css"
+import { AnalyticsProvider } from "./lib/analytics"
 import { getErrorMessage } from "./lib/api-errors"
 import { AuthProvider, useAuth } from "./lib/auth"
+import { FeatureFlagProvider } from "./lib/feature-flags"
 import { routeTree } from "./routeTree.gen"
 
 const queryClient = new QueryClient({
@@ -65,7 +67,11 @@ createRoot(document.getElementById("root")!).render(
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="system" storageKey="app_theme">
         <AuthProvider>
-          <App />
+          <AnalyticsProvider>
+            <FeatureFlagProvider>
+              <App />
+            </FeatureFlagProvider>
+          </AnalyticsProvider>
         </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
