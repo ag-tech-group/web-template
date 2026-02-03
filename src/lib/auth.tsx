@@ -7,7 +7,7 @@ import {
   useMemo,
   useState,
 } from "react"
-import { baseUrl, setOnUnauthorized } from "@/api/api"
+import { api, setOnUnauthorized } from "@/api/api"
 
 const EMAIL_KEY = "app_auth_email"
 
@@ -42,10 +42,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await fetch(`${baseUrl}/auth/jwt/logout`, {
-        method: "POST",
-        credentials: "include",
-      })
+      await api.post("auth/jwt/logout")
     } catch {
       // Clear state regardless of fetch success
     }
@@ -60,18 +57,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch(`${baseUrl}/auth/me`, {
-        credentials: "include",
-      })
-      if (res.ok) {
-        const user = await res.json()
-        setIsAuthenticated(true)
-        setEmail(user.email)
-        setUserId(user.id)
-        localStorage.setItem(EMAIL_KEY, user.email)
-      } else {
-        clearState()
-      }
+      const user = await api.get("auth/me").json<{ id: string; email: string }>()
+      setIsAuthenticated(true)
+      setEmail(user.email)
+      setUserId(user.id)
+      localStorage.setItem(EMAIL_KEY, user.email)
     } catch {
       clearState()
     } finally {
