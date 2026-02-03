@@ -7,6 +7,9 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "jsdom",
+    env: {
+      VITE_LOG_LEVEL: "warn",
+    },
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
