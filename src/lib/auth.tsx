@@ -57,7 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const user = await api.get("auth/me").json<{ id: string; email: string }>()
+      const user = await api
+        .get("auth/me")
+        .json<{ id: string; email: string }>()
       setIsAuthenticated(true)
       setEmail(user.email)
       setUserId(user.id)
