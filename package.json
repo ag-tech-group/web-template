@@ -69,7 +69,7 @@
     "tw-animate-css": "^1.2.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.57.0",
-    "vite": "^8.0.0",
+    "vite": "^8.0.8",
     "vitest": "^4.1.0"
   },
   "lint-staged": {
