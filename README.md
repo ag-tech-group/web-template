@@ -14,6 +14,36 @@ A production-ready React starter template built with Vite, TanStack Router, TanS
 
 Designed to pair with [api-template](https://github.com/ag-tech-group/api-template) (FastAPI backend with cookie JWT auth and refresh tokens), but can work with any backend.
 
+## Table of Contents
+
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Getting Started](#getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Development](#development)
+  - [Build](#build)
+- [Customizing for Your App](#customizing-for-your-app)
+- [Authentication](#authentication)
+  - [How it works](#how-it-works)
+- [Theming](#theming)
+- [Error Handling](#error-handling)
+- [API Client Generation](#api-client-generation)
+  - [Generate API Client](#generate-api-client)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+- [Testing](#testing)
+  - [Test Utilities](#test-utilities)
+- [Project Structure](#project-structure)
+- [Adding Components](#adding-components)
+- [Logging, Analytics & Feature Flags](#logging-analytics--feature-flags)
+  - [Logger](#logger)
+  - [Analytics](#analytics)
+  - [Feature Flags](#feature-flags)
+- [Environment Variables](#environment-variables)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
+
 ## Tech Stack
 
 - **React 19** - UI library
