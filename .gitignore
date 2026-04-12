@@ -29,7 +29,3 @@ dist-ssr
 
 # Playwright MCP session logs
 .playwright-mcp/
-
-# Local review artifacts (screenshots, etc.)
-/mobile-*.png
-/tablet-*.png
