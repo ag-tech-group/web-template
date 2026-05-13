@@ -136,14 +136,15 @@ The template includes a complete auth setup designed to work with the companion 
 
 - **AuthProvider** (`src/lib/auth.tsx`) — React context tracking `isAuthenticated`, `isLoading`, `email`, and `userId`
 - **Automatic token refresh** (`src/api/api.ts`) — 401 responses trigger a refresh attempt; concurrent requests are coalesced into a single refresh call
-- **Session check on load** — `GET /auth/me` validates the session on mount
+- **Session check on load** — `GET /v1/auth/me` validates the session on mount
 - **Auth in router context** — `auth` is available in route `beforeLoad` for route guards
 
 ### How it works
 
-1. Backend sets httpOnly cookies (`app_access` + `app_refresh`) on login
+1. Backend sets httpOnly cookies (`app_access` + `app_refresh`) on login; the
+   refresh cookie is path-scoped to `/v1/auth/refresh`
 2. All API requests include cookies via `credentials: "include"`
-3. On 401, the client POSTs to `/auth/refresh` to rotate tokens
+3. On 401, the client POSTs to `/v1/auth/refresh` to rotate tokens
 4. If refresh succeeds, the original request is retried transparently
 5. If refresh fails, `onUnauthorized` fires and auth state is cleared
 
@@ -254,7 +255,7 @@ await renderWithFileRoutes(<div />, {
 })
 ```
 
-MSW handlers are configured in `src/api/handlers.ts`. A default handler for `/auth/me` (returns 401) is included to suppress warnings during tests.
+MSW handlers are configured in `src/api/handlers.ts`. A default handler for `/v1/auth/me` (returns 401) is included to suppress warnings during tests.
 
 ## Project Structure
 
@@ -316,7 +317,7 @@ Set `VITE_LOG_LEVEL` to control the minimum level (default: `debug` in dev, `war
 
 ### Feature Flags
 
-`FeatureFlagProvider` fetches flags from the API's `GET /flags` endpoint (cached via TanStack Query, refetches on window focus). If the API call fails, it falls back to `VITE_FEATURE_*` env vars.
+`FeatureFlagProvider` fetches flags from the API's `GET /v1/flags` endpoint (cached via TanStack Query, refetches on window focus). If the API call fails, it falls back to `VITE_FEATURE_*` env vars.
 
 Use the `useFeatureFlag("flag_name")` hook or the `<Feature flag="flag_name">` component for conditional rendering.
 

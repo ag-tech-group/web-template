@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
-      await api.post("auth/jwt/logout")
+      await api.post("v1/auth/jwt/logout")
     } catch {
       // Clear state regardless of fetch success
     }
@@ -61,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       const user = await api
-        .get("auth/me")
+        .get("v1/auth/me")
         .json<{ id: string; email: string; name: string | null }>()
       setIsAuthenticated(true)
       setEmail(user.email)

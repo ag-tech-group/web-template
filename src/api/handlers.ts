@@ -9,6 +9,6 @@ import { http, HttpResponse, type HttpHandler } from "msw"
  */
 
 export const handlers: HttpHandler[] = [
-  // Return 401 for /auth/me by default (unauthenticated)
-  http.get("*/auth/me", () => HttpResponse.json(null, { status: 401 })),
+  // Return 401 for /v1/auth/me by default (unauthenticated)
+  http.get("*/v1/auth/me", () => HttpResponse.json(null, { status: 401 })),
 ]

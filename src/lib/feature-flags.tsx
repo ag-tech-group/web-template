@@ -39,7 +39,7 @@ export function FeatureFlagProvider({
     queryKey: ["feature-flags"],
     queryFn: async () => {
       try {
-        return await api.get("flags").json<FlagMap>()
+        return await api.get("v1/flags").json<FlagMap>()
       } catch {
         return getEnvFlags()
       }
