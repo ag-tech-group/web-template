@@ -14,7 +14,7 @@ let refreshPromise: Promise<boolean> | null = null
 
 async function attemptRefresh(): Promise<boolean> {
   try {
-    const res = await fetch(`${baseUrl}/auth/refresh`, {
+    const res = await fetch(`${baseUrl}/v1/auth/refresh`, {
       method: "POST",
       credentials: "include",
     })
@@ -37,7 +37,10 @@ export const api = ky.create({
 
         // Don't try to refresh if this IS the refresh request (prevent loop)
         const url = request.url
-        if (url.includes("/auth/refresh") || url.includes("/auth/jwt/logout")) {
+        if (
+          url.includes("/v1/auth/refresh") ||
+          url.includes("/v1/auth/jwt/logout")
+        ) {
           if (onUnauthorized) onUnauthorized()
           return
         }
