@@ -274,7 +274,7 @@ src/
 │   ├── ui/                 # shadcn/ui components (Button, Card, Input, Label)
 │   ├── theme-provider.tsx  # Dark/light/system theme context
 │   ├── theme-toggle.tsx    # Theme cycle button
-│   ├── error-boundary.tsx  # Root error component with retry
+│   ├── error-boundary.tsx  # Default error boundary with retry
 │   └── not-found.tsx       # 404 page
 ├── lib/
 │   ├── analytics.tsx       # AnalyticsProvider + useAnalytics hook
