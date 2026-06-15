@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import ky, { type Options } from "ky"
 
 export const baseUrl = import.meta.env.VITE_API_URL || "/api"

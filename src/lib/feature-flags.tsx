@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { createContext, useContext, useMemo } from "react"
 import { api } from "@/api/api"

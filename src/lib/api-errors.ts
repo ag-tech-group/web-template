@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 const STATUS_MESSAGES: Record<number, string> = {
   400: "Invalid request. Please check your input.",
   401: "Your session has expired. Please sign in again.",

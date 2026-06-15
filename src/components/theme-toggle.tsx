@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import { Moon, Monitor, Sun } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTheme } from "@/components/theme-provider"

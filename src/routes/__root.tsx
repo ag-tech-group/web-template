@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import { lazy, Suspense, useEffect } from "react"
 import { QueryClient } from "@tanstack/react-query"
 import {
