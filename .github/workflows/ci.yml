@@ -36,6 +36,9 @@ jobs:
       - name: Format check
         run: pnpm format:check
 
+      - name: License headers
+        run: pnpm run license:check
+
       - name: Type check
         run: pnpm tsc --noEmit
 

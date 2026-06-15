@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import { defineConfig } from "orval"
 
 const input = process.env.OPENAPI_URL || "http://localhost:8000/openapi.json"

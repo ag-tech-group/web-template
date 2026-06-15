@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 AG Technology Group LLC
+// SPDX-License-Identifier: Apache-2.0
+
 import { renderWithFileRoutes } from "@/test/renderers"
 import { screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
