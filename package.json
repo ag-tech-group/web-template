@@ -13,8 +13,6 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "license:check": "node scripts/license-header.mjs --check --all",
-    "license:fix": "node scripts/license-header.mjs --fix --all",
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
