@@ -21,6 +21,23 @@ import { AuthProvider, useAuth } from "./lib/auth"
 import { FeatureFlagProvider } from "./lib/feature-flags"
 import { routeTree } from "./routeTree.gen"
 
+// Recover from stale code-split chunks after a deploy. Each build content-hashes
+// its chunk filenames, so a tab still running a previous build will 404 when it
+// lazily imports a route chunk the new deploy has already replaced. Vite fires
+// `vite:preloadError` on that failure; reload once to pick up the current build.
+// The timestamp guard prevents a reload loop when a deploy is genuinely broken
+// (the chunk stays missing): we reload at most once per short window, then let
+// the error surface. A later deploy (outside the window) can reload again.
+window.addEventListener("vite:preloadError", (event) => {
+  const GUARD_KEY = "vite:preloadError:lastReload"
+  const RELOAD_WINDOW_MS = 10_000
+  const lastReload = Number(sessionStorage.getItem(GUARD_KEY) ?? 0)
+  if (Date.now() - lastReload < RELOAD_WINDOW_MS) return
+  event.preventDefault()
+  sessionStorage.setItem(GUARD_KEY, String(Date.now()))
+  window.location.reload()
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
