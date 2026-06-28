@@ -21,6 +21,31 @@ import { AuthProvider, useAuth } from "./lib/auth"
 import { FeatureFlagProvider } from "./lib/feature-flags"
 import { routeTree } from "./routeTree.gen"
 
+// A `vite:preloadError` fires when a dynamic import for a code-split chunk
+// fails — which almost always means a newer build was deployed and this tab is
+// now stale (it references content-hashed chunk filenames the deploy has already
+// replaced). We prompt the user to reload rather than force-reloading: a forced
+// reload discards any unsaved work, and because the router uses
+// `defaultPreload: "intent"` this event also fires for *speculative* preloads
+// (hovering a stale link), where auto-reloading the page would be jarring.
+// `preventDefault()` stops Vite re-throwing the failed import (otherwise the
+// hover-preload failures surface as uncaught errors); the toast lets the user
+// reload on their own terms. Shown once so a burst of failures can't stack it.
+let updateToastShown = false
+window.addEventListener("vite:preloadError", (event) => {
+  event.preventDefault()
+  if (updateToastShown) return
+  updateToastShown = true
+  toast.info("A new version is available", {
+    description: "Reload to get the latest update.",
+    duration: Infinity,
+    action: {
+      label: "Reload",
+      onClick: () => window.location.reload(),
+    },
+  })
+})
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
