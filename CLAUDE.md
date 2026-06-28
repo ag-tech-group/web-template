@@ -35,9 +35,10 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   so every consumer sees a total type. See hardening.
 - **Global mutation errors** surface via the `MutationCache` in `main.tsx` (toast);
   opt out per-mutation with `meta: { skipGlobalError: true }`.
-- **Stale code-split chunks auto-reload.** A `vite:preloadError` listener in
-  `main.tsx` reloads once after a deploy replaces the chunk an open tab is
-  importing. See hardening.
+- **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
+  `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
+  replaced the chunk an open tab is importing, letting the user reload on their
+  own terms rather than force-reloading over unsaved work. See hardening.
 
 ## Production hardening — gotchas learned under real live-event load
 
@@ -47,9 +48,12 @@ spec (only when the `OPENAPI_URL` repo variable is set).
 
 - [ ] **A code-split SPA orphans chunks for already-open tabs on _every_ deploy.**
       Each build content-hashes its chunk filenames; a tab on a previous build 404s
-      when it lazily imports a replaced route chunk. The `vite:preloadError` → guarded
-      `location.reload()` listener in `main.tsx` handles it — keep it, and expect a
-      per-deploy blip under live traffic (consider a deploy freeze at peak viewership).
+      when it lazily imports a replaced route chunk. The `vite:preloadError` listener
+      in `main.tsx` catches it and prompts the user to reload (a toast, not a forced
+      reload — the event also fires for `defaultPreload: "intent"` hover preloads,
+      where an auto-reload would yank the page out from under the user and discard
+      unsaved work). Expect a per-deploy blip under live traffic (consider a deploy
+      freeze at peak viewership).
 - [ ] **A sort comparator must be total — never throw.** A comparator runs over
       whatever the cache holds, including a partial or stale-shaped row served during a
       deploy rollover. `a.name.localeCompare(b.name)` throws if `name` is ever
