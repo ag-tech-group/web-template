@@ -14,7 +14,7 @@ export const orvalClient = async <T>(
   url: string,
   options?: RequestInit
 ): Promise<T> => {
-  // Remove leading slash if present since Ky prefixUrl handles it
+  // Remove leading slash if present since Ky prefix handles it
   const normalizedUrl = url.startsWith("/") ? url.slice(1) : url
 
   // Normalize body for Ky: JSON stringify plain objects, pass through supported types

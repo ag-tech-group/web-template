@@ -28,14 +28,14 @@ async function attemptRefresh(): Promise<boolean> {
 }
 
 export const api = ky.create({
-  prefixUrl: baseUrl,
+  prefix: baseUrl,
   timeout: 30000,
   credentials: "include",
   // Retries are handled by TanStack React Query
   retry: 0,
   hooks: {
     afterResponse: [
-      async (request, options, response) => {
+      async ({ request, options, response }) => {
         if (response.status !== 401) return
 
         // Don't try to refresh if this IS the refresh request (prevent loop)
