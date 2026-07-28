@@ -79,6 +79,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [clearState])
 
   useEffect(() => {
+    // checkAuth is async: its setState calls run after an await, not
+    // synchronously within the effect body, so cascading renders don't apply.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     checkAuth()
   }, [checkAuth])
 
