@@ -12,6 +12,7 @@
     "build": "pnpm run generate-routes && tsc -b && vite build",
     "generate-api": "orval",
     "lint": "eslint .",
+    "typecheck": "tsc -b --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "preview": "vite preview",
