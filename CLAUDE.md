@@ -13,7 +13,7 @@ pnpm dev                         # dev server
 pnpm build                       # generate-routes + tsc -b + vite build
 
 # Checks (exactly what CI runs)
-pnpm lint                        # eslint (use `pnpm lint --fix` to autofix)
+pnpm lint                        # eslint
 pnpm format:check                # prettier (use `pnpm format` to apply)
 pnpm tsc --noEmit                # type check
 pnpm test:run                    # vitest (one-shot)
@@ -38,9 +38,9 @@ spec (only when the `OPENAPI_URL` repo variable is set).
 - **Direction utilities must be logical, not physical.** Use `ms-`/`me-`,
   `ps-`/`pe-`, `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
   `rounded-s`/`rounded-e` — never `ml-`, `pr-`, `left-`, `text-left`. The local
-  `local/logical-direction-classes` ESLint rule enforces this and autofixes, so a
-  consuming app can flip `<html dir>` in `index.html` to `rtl` and have the layout
-  mirror. See RTL readiness.
+  `local/logical-direction-classes` ESLint rule enforces this, so a consuming app
+  can flip `<html dir>` in `index.html` to `rtl` and have the layout mirror.
+  See RTL readiness.
 - **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
@@ -52,16 +52,22 @@ The template ships no physical direction utilities, and `local/logical-direction
 (`eslint-rules/logical-direction-classes.js`) keeps it that way — a downstream app
 should only ever have to change `dir="ltr"` on `<html>` in `index.html`.
 
-- **The rule is autofixable.** `pnpm lint --fix` rewrites `ml-4` → `ms-4`,
-  `text-left` → `text-start`, `-left-4` → `-start-4`, `rounded-tr-md` →
-  `rounded-se-md`, and so on. It only fires inside `className`/`class` attributes
-  and `cn`/`clsx`/`cva`/`twMerge` calls, so an ordinary string containing `pr-` or
-  `ml-` is never touched.
-- **`shadcn add` writes physical utilities.** The upstream registry is LTR-only —
-  anything past the five primitives already here (dialog, dropdown-menu, select,
-  sheet, table, command) arrives with `pl-8`, `left-2`, `text-left`. Run
-  `pnpm lint --fix` immediately after adding a component; that is the whole point
-  of the rule existing.
+- **The rule reports; it does not autofix.** Deliberate. Whether `ml-4` _should_
+  become `ms-4` depends on whether that element is meant to mirror — a code block,
+  a chart axis or a Latin-script logotype should stay physical, with an
+  `eslint-disable-next-line` and a reason. Converting by hand means looking at each
+  one. An autofix would assert "always mirror" silently across every file it
+  touched.
+- **`shadcn add` writes physical utilities.** The upstream registry is LTR-only, so
+  anything past the five primitives here (button, card, input, label, skeleton)
+  arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in — that is the
+  whole point of the rule existing.
+- **It fires only in class positions.** `className`/`class` attributes and
+  `cn`/`clsx`/`classNames`/`cva`/`twMerge`/`twJoin` calls, and it stops walking at a
+  comparison, a non-builder call or a member access — so `side === "right"`,
+  `someFn("pr-review")` and `styles["left-panel"]` are left alone. Getting this
+  wrong is how a rule like this breaks shadcn's `sheet.tsx`, whose `SheetContent`
+  discriminates on `side === "right"` right next to the class list.
 - **Some utilities have no logical form.** `translate-x-*` and `origin-left`/
   `origin-right` are not reported because Tailwind offers no replacement — they
   need an explicit `rtl:` variant. Slide-in animation classes
@@ -72,6 +78,11 @@ should only ever have to change `dir="ltr"` on `<html>` in `index.html`.
 - **Toast position is deliberately physical.** `<Toaster position="bottom-right">`
   in `__root.tsx` is app chrome, not content flow, and stays pinned regardless of
   direction. Change it per-app if a design calls for it.
+- **Known blind spots.** The rule doesn't see `utils.cn("ml-2")` (member-expression
+  callee), a class string assigned to a variable before use, a bare
+  `{ className: "ml-4" }` object outside a builder call, or arbitrary properties
+  like `[margin-left:4px]` — that last one is genuinely physical CSS that slips the
+  net. Treat the rule as a backstop, not a proof of RTL-safety.
 
 ## Production hardening — gotchas learned under real live-event load
 

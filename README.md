@@ -306,9 +306,9 @@ npx shadcn-ui@latest add select
 # etc.
 ```
 
-Then run `pnpm lint --fix`. shadcn's registry is LTR-only and ships physical
-direction utilities (`pl-8`, `left-2`, `text-left`); the fixer rewrites them to
-their logical equivalents. See [RTL Readiness](#rtl-readiness).
+shadcn's registry is LTR-only and ships physical direction utilities (`pl-8`,
+`left-2`, `text-left`). `pnpm lint` will flag them and name the logical
+replacement — convert them on the way in. See [RTL Readiness](#rtl-readiness).
 
 ## RTL Readiness
 
@@ -326,12 +326,20 @@ change:
 
 A custom ESLint rule, `local/logical-direction-classes`
 (`eslint-rules/logical-direction-classes.js`), keeps it that way. It reports any
-physical utility inside a `className`/`class` attribute or a `cn`/`clsx`/`cva`/`twMerge`
-call, and every report is autofixable:
+physical utility inside a `className`/`class` attribute or a
+`cn`/`clsx`/`classNames`/`cva`/`twMerge`/`twJoin` call, and names the replacement:
 
-```bash
-pnpm lint --fix     # ml-4 → ms-4, text-left → text-start, rounded-tr-md → rounded-se-md
 ```
+src/components/ui/sheet.tsx
+  42:31  error  `left-0` does not mirror under `dir="rtl"`. Use `start-0`
+                local/logical-direction-classes
+```
+
+**The rule has no autofix, on purpose.** Whether `ml-4` should become `ms-4`
+depends on whether that element is meant to mirror — a code block, a chart axis or
+a Latin-script logotype should stay physical. Converting by hand means looking at
+each one; add an `eslint-disable-next-line` with a reason where physical is
+correct.
 
 Two things the rule intentionally leaves alone:
 
@@ -340,6 +348,11 @@ Two things the rule intentionally leaves alone:
 - **`space-x-*` and `divide-x-*`** — already logical under Tailwind v4 (they compile to
   `margin-inline-*` and `border-inline-*-width`). This changed from v3, so don't
   convert them when porting older code in.
+
+It is a backstop, not a proof of RTL-safety. It doesn't see `utils.cn("ml-2")`
+(member-expression callee), a class string assigned to a variable before use, a bare
+`{ className: "ml-4" }` object outside a builder call, or arbitrary properties like
+`[margin-left:4px]`.
 
 ## Logging, Analytics & Feature Flags
 
