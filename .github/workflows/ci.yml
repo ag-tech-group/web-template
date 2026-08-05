@@ -40,6 +40,13 @@ jobs:
       - name: Test
         run: pnpm test:run
 
+      # Type checking alone can't catch bundler-level failures. The `@` alias in
+      # particular is declared four times -- tsconfig.json, tsconfig.app.json,
+      # vite.config.ts, vitest.config.ts -- and TypeScript only reads the first
+      # two, so drift between the pairs type-checks clean and fails here.
+      - name: Build
+        run: pnpm build
+
   # Verifies that generated API types are up-to-date with the backend
   # Requires OPENAPI_URL to be set (e.g., to a staging backend)
   verify-api-types:
