@@ -15,7 +15,7 @@ pnpm build                       # generate-routes + tsc -b + vite build
 # Checks (exactly what CI runs)
 pnpm lint                        # eslint
 pnpm format:check                # prettier (use `pnpm format` to apply)
-pnpm tsc --noEmit                # type check
+pnpm typecheck                   # type check (tsc -b --noEmit)
 pnpm test:run                    # vitest (one-shot)
 
 pnpm generate-api                # regenerate the orval client from the OpenAPI spec
