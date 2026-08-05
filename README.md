@@ -331,7 +331,7 @@ physical utility inside a `className`/`class` attribute or a
 
 ```
 src/components/ui/sheet.tsx
-  42:31  error  `left-0` does not mirror under `dir="rtl"`. Use `start-0`
+  42:31  error  `left-0` does not mirror under `dir="rtl"`. Use `start-0`.
                 local/logical-direction-classes
 ```
 
@@ -339,7 +339,9 @@ src/components/ui/sheet.tsx
 depends on whether that element is meant to mirror — a code block, a chart axis or
 a Latin-script logotype should stay physical. Converting by hand means looking at
 each one; add an `eslint-disable-next-line` with a reason where physical is
-correct.
+correct. Reports land on the offending class's own line, so a multi-line class
+string needs the `/* eslint-disable */ … /* eslint-enable */` block form — a line
+comment can't sit inside a template literal.
 
 Two things the rule intentionally leaves alone:
 

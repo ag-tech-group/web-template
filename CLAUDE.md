@@ -57,7 +57,9 @@ should only ever have to change `dir="ltr"` on `<html>` in `index.html`.
   a chart axis or a Latin-script logotype should stay physical, with an
   `eslint-disable-next-line` and a reason. Converting by hand means looking at each
   one. An autofix would assert "always mirror" silently across every file it
-  touched.
+  touched. (Reports land on the offending class's own line, so a _multi-line_
+  class string needs the `/* eslint-disable */ … /* eslint-enable */` block form —
+  a line comment can't sit inside a template literal.)
 - **`shadcn add` writes physical utilities.** The upstream registry is LTR-only, so
   anything past the five primitives here (button, card, input, label, skeleton)
   arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in — that is the

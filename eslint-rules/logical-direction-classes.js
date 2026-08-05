@@ -59,7 +59,9 @@ const BARE_ONLY = {
 }
 
 const VALUED = { ...REQUIRES_VALUE, ...BARE_OR_VALUED }
-// Longest first, so a more specific prefix always wins over a shorter one.
+// Longest first. Defensive only: because every match requires a trailing
+// hyphen, no base can currently match two keys — but that holds by accident of
+// the current key set, not by construction.
 const VALUED_PREFIXES = Object.keys(VALUED).sort((a, b) => b.length - a.length)
 
 const CLASS_ATTRIBUTES = new Set(["className", "class"])
@@ -71,6 +73,13 @@ const CLASS_BUILDERS = new Set([
   "twMerge",
   "twJoin",
 ])
+
+/**
+ * Builders whose *object keys* are class names (`cn({ "ml-4": isActive })`).
+ * `cva`'s config object is keyed by variant name instead, so a hyphenated
+ * variant like `{ side: { "left-panel": … } }` must not be read as a class.
+ */
+const OBJECT_KEY_BUILDERS = new Set(["cn", "clsx", "classNames"])
 
 /**
  * Node types a class string may legitimately sit inside on the way to the
@@ -85,7 +94,16 @@ const COMPOSITION_NODES = new Set([
   "ObjectExpression",
   "Property",
   "TemplateLiteral",
+  "TaggedTemplateExpression",
+  "SpreadElement",
   "JSXExpressionContainer",
+  // TypeScript wrappers pass the value through unchanged. The rule only ever
+  // runs on `.ts`/`.tsx` (see `eslint.config.js`), so `cn("ml-4" as const)` is
+  // ordinary code here, not an exotic case.
+  "TSAsExpression",
+  "TSSatisfiesExpression",
+  "TSNonNullExpression",
+  "TSTypeAssertion",
 ])
 
 // A class token is a whitespace-delimited run. Quotes, backticks and braces are
@@ -113,21 +131,30 @@ function splitVariants(token) {
 /** Returns the logical form of a class token, or null if it has none. */
 function toLogical(token) {
   const [variants, utility] = splitVariants(token)
-  // Leading `!` (important) and `-` (negative) in either order; reattached
-  // verbatim so we never have to guess which order Tailwind blesses.
-  const modifiers = /^[!-]*/.exec(utility)[0]
-  const base = utility.slice(modifiers.length)
-  const prefix = variants + modifiers
+  // Important is trailing in v4 (`ml-4!`) and leading in the v3 compat syntax
+  // (`!ml-4`); `-` marks a negative. All are stripped and reattached verbatim,
+  // so we never have to guess which order Tailwind blesses.
+  const leading = /^[!-]*/.exec(utility)[0]
+  const withoutLeading = utility.slice(leading.length)
+  const trailing = withoutLeading.endsWith("!") ? "!" : ""
+  const base = trailing ? withoutLeading.slice(0, -1) : withoutLeading
+  const prefix = variants + leading
 
-  // `Object.hasOwn`, not truthiness — a plain `EXACT[base]` lookup resolves
+  const logical = toLogicalBase(base)
+  return logical === null ? null : prefix + logical + trailing
+}
+
+/** Maps a bare utility (no variants, no modifiers) to its logical form. */
+function toLogicalBase(base) {
+  // `Object.hasOwn`, not truthiness — a plain `MAP[base]` lookup resolves
   // `constructor` and `toString` off Object.prototype.
-  if (Object.hasOwn(BARE_ONLY, base)) return prefix + BARE_ONLY[base]
-  if (Object.hasOwn(BARE_OR_VALUED, base)) return prefix + BARE_OR_VALUED[base]
+  if (Object.hasOwn(BARE_ONLY, base)) return BARE_ONLY[base]
+  if (Object.hasOwn(BARE_OR_VALUED, base)) return BARE_OR_VALUED[base]
 
   for (const physical of VALUED_PREFIXES) {
     // Requires the hyphen, so `border-lime-500` never matches `border-l`.
     if (base.startsWith(`${physical}-`)) {
-      return prefix + VALUED[physical] + base.slice(physical.length)
+      return VALUED[physical] + base.slice(physical.length)
     }
   }
   return null
@@ -157,24 +184,25 @@ export const logicalDirectionClasses = {
     function isClassContext(node) {
       let current = node
       let parent = current.parent
+      // Whether the string reached us as an object *key* rather than a value.
+      let viaObjectKey = false
 
       while (parent) {
         if (parent.type === "JSXAttribute") {
           return (
+            !viaObjectKey &&
             parent.name.type === "JSXIdentifier" &&
             CLASS_ATTRIBUTES.has(parent.name.name)
           )
         }
         if (parent.type === "CallExpression") {
-          return (
-            parent.callee.type === "Identifier" &&
-            CLASS_BUILDERS.has(parent.callee.name)
-          )
+          if (parent.callee.type !== "Identifier") return false
+          const builders = viaObjectKey ? OBJECT_KEY_BUILDERS : CLASS_BUILDERS
+          return builders.has(parent.callee.name)
         }
-        // Object keys are deliberately *not* excluded: clsx/cn object syntax
-        // puts class names in the key (`cn({ "ml-4": isActive })`). A cva
-        // variant key named `left`/`right` is safe because bare `left`/`right`
-        // are not utilities and so never match.
+        if (parent.type === "Property" && parent.key === current) {
+          viaObjectKey = true
+        }
         if (!COMPOSITION_NODES.has(parent.type)) return false
 
         current = parent

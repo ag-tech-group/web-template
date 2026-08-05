@@ -27,8 +27,9 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       // Keeps the tree RTL-ready: physical direction utilities (`ml-`, `pr-`,
-      // `text-left`) don't mirror under `dir="rtl"`. Autofixable —
-      // `pnpm lint --fix` after `shadcn add`, which writes physical utilities.
+      // `text-left`) don't mirror under `dir="rtl"`. Reports only — converting
+      // is a judgment call per call site, so it names the replacement rather
+      // than rewriting. Bites after `shadcn add`, whose registry is LTR-only.
       "local/logical-direction-classes": "error",
       "react-refresh/only-export-components": [
         "warn",

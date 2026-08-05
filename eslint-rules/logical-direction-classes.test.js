@@ -2,14 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { RuleTester } from "eslint"
+import tseslint from "typescript-eslint"
 import { logicalDirectionClasses } from "./logical-direction-classes.js"
 
-const ruleTester = new RuleTester({
-  languageOptions: {
-    ecmaVersion: 2022,
-    sourceType: "module",
-    parserOptions: { ecmaFeatures: { jsx: true } },
-  },
+const languageOptions = {
+  ecmaVersion: 2022,
+  sourceType: "module",
+  parserOptions: { ecmaFeatures: { jsx: true } },
+}
+
+const ruleTester = new RuleTester({ languageOptions })
+
+// `eslint.config.js` scopes this rule to `**/*.{ts,tsx}`, so the TS parser is
+// the *only* parser it sees in production. Exercising it solely under espree
+// once hid a regression where `cn("ml-4" as const)` stopped being detected.
+const tsRuleTester = new RuleTester({
+  languageOptions: { ...languageOptions, parser: tseslint.parser },
 })
 
 /** Shorthand for the one message this rule emits. */
@@ -56,6 +64,9 @@ ruleTester.run("logical-direction-classes", logicalDirectionClasses, {
     'cn("p-2", t("mr-title"))',
     // clsx object syntax: the key is the class, and it is already logical.
     '<div className={cn({ "ms-4": isActive })} />',
+    // cva keys are variant *names*, not classes — renaming one per the
+    // suggestion would break the mapping.
+    'cva("x", { variants: { side: { "left-panel": "a", "right-rail": "b" } } })',
 
     // Inherited Object.prototype keys must not resolve as a mapping.
     'cn("constructor toString hasOwnProperty valueOf")',
@@ -84,12 +95,24 @@ ruleTester.run("logical-direction-classes", logicalDirectionClasses, {
       ],
     },
     {
-      // Leading `!` important modifier, still valid in v4.
+      // Leading `!` — the v3 compat syntax, still accepted by v4.
       code: '<div className="!ml-4 !text-left md:!pr-2" />',
       errors: [
         err("!ml-4", "!ms-4"),
         err("!text-left", "!text-start"),
         err("md:!pr-2", "md:!pe-2"),
+      ],
+    },
+    {
+      // Trailing `!` — the idiomatic v4 form. The bare-lookup utilities are
+      // the ones a leading-only strip misses.
+      code: '<div className="ml-4! text-left! border-l! rounded-tl! md:pr-2!" />',
+      errors: [
+        err("ml-4!", "ms-4!"),
+        err("text-left!", "text-start!"),
+        err("border-l!", "border-s!"),
+        err("rounded-tl!", "rounded-ss!"),
+        err("md:pr-2!", "md:pe-2!"),
       ],
     },
     {
@@ -144,5 +167,54 @@ ruleTester.run("logical-direction-classes", logicalDirectionClasses, {
       code: '<div className={cn({ "ml-4": isActive })} />',
       errors: [err("ml-4", "ms-4")],
     },
+    {
+      // Pins LogicalExpression and ArrayExpression in COMPOSITION_NODES.
+      // Both must carry a *physical* class, or removing the node type from the
+      // set leaves the suite green. `cond && "…"` is the core clsx idiom.
+      code: 'cn(isActive && "ml-4", ["mr-2"], cond || "pl-1")',
+      errors: [err("ml-4", "ms-4"), err("mr-2", "me-2"), err("pl-1", "ps-1")],
+    },
+    {
+      // Spread and tagged template, both inside a builder call.
+      code: 'cn(...["ml-4"], tw`pr-2`)',
+      errors: [err("ml-4", "ms-4"), err("pr-2", "pe-2")],
+    },
   ],
 })
+
+// The rule only ever runs on `.ts`/`.tsx`, so TS-only syntax is the *only*
+// syntax it sees in production. These wrappers pass a value through unchanged
+// and must not hide a class from the walk.
+tsRuleTester.run(
+  "logical-direction-classes (typescript)",
+  logicalDirectionClasses,
+  {
+    valid: [
+      'cn("ms-4" as const)',
+      'cn("fixed", (side as Side) === "right" && "end-0")',
+    ],
+
+    invalid: [
+      {
+        code: 'cn("ml-4" as const, "mr-2" as string, "pl-1" satisfies string)',
+        errors: [err("ml-4", "ms-4"), err("mr-2", "me-2"), err("pl-1", "ps-1")],
+      },
+      {
+        code: 'cn(["ml-4"] as const, { "mr-2": on } as const)',
+        errors: [err("ml-4", "ms-4"), err("mr-2", "me-2")],
+      },
+      {
+        code: '<div className={"ml-4" as string} />',
+        errors: [err("ml-4", "ms-4")],
+      },
+      {
+        code: 'cva("b", { variants: { s: { a: "ml-4" } } } as const)',
+        errors: [err("ml-4", "ms-4")],
+      },
+      {
+        code: 'cn(cls!, "ml-4"!)',
+        errors: [err("ml-4", "ms-4")],
+      },
+    ],
+  }
+)
