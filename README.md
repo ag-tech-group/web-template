@@ -79,7 +79,7 @@ Designed to pair with [api-template](https://github.com/ag-tech-group/api-templa
 
 ### Prerequisites
 
-- Node.js 24+
+- Node.js 24.15+
 - pnpm (recommended, but any Node package manager should work)
 
 ### Installation
