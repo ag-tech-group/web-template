@@ -36,6 +36,7 @@ Designed to pair with [api-template](https://github.com/ag-tech-group/api-templa
   - [Test Utilities](#test-utilities)
 - [Project Structure](#project-structure)
 - [Adding Components](#adding-components)
+- [RTL Readiness](#rtl-readiness)
 - [Logging, Analytics & Feature Flags](#logging-analytics--feature-flags)
   - [Logger](#logger)
   - [Analytics](#analytics)
@@ -260,6 +261,8 @@ MSW handlers are configured in `src/api/handlers.ts`. A default handler for `/v1
 ## Project Structure
 
 ```
+eslint-rules/
+└── logical-direction-classes.js  # Enforces logical (RTL-safe) Tailwind utilities
 src/
 ├── api/
 │   ├── api.ts              # Ky client with token refresh
@@ -302,6 +305,41 @@ npx shadcn-ui@latest add dialog
 npx shadcn-ui@latest add select
 # etc.
 ```
+
+Then run `pnpm lint --fix`. shadcn's registry is LTR-only and ships physical
+direction utilities (`pl-8`, `left-2`, `text-left`); the fixer rewrites them to
+their logical equivalents. See [RTL Readiness](#rtl-readiness).
+
+## RTL Readiness
+
+Every direction-sensitive class in this template is logical (`ms-`/`me-`, `ps-`/`pe-`,
+`start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`)
+rather than physical (`ml-`, `pr-`, `left-`, `text-left`). Logical utilities resolve
+against the inline axis, so they mirror automatically when the document direction
+flips — which means switching an app built from this template to RTL is a one-line
+change:
+
+```html
+<!-- index.html -->
+<html lang="ar" dir="rtl"></html>
+```
+
+A custom ESLint rule, `local/logical-direction-classes`
+(`eslint-rules/logical-direction-classes.js`), keeps it that way. It reports any
+physical utility inside a `className`/`class` attribute or a `cn`/`clsx`/`cva`/`twMerge`
+call, and every report is autofixable:
+
+```bash
+pnpm lint --fix     # ml-4 → ms-4, text-left → text-start, rounded-tr-md → rounded-se-md
+```
+
+Two things the rule intentionally leaves alone:
+
+- **`translate-x-*`, `origin-left`, `slide-in-from-left-*`** — Tailwind has no logical
+  equivalent for these. If you need them to mirror, use an `rtl:` variant.
+- **`space-x-*` and `divide-x-*`** — already logical under Tailwind v4 (they compile to
+  `margin-inline-*` and `border-inline-*-width`). This changed from v3, so don't
+  convert them when porting older code in.
 
 ## Logging, Analytics & Feature Flags
 

@@ -13,7 +13,7 @@ pnpm dev                         # dev server
 pnpm build                       # generate-routes + tsc -b + vite build
 
 # Checks (exactly what CI runs)
-pnpm lint                        # eslint
+pnpm lint                        # eslint (use `pnpm lint --fix` to autofix)
 pnpm format:check                # prettier (use `pnpm format` to apply)
 pnpm tsc --noEmit                # type check
 pnpm test:run                    # vitest (one-shot)
@@ -35,10 +35,43 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   so every consumer sees a total type. See hardening.
 - **Global mutation errors** surface via the `MutationCache` in `main.tsx` (toast);
   opt out per-mutation with `meta: { skipGlobalError: true }`.
+- **Direction utilities must be logical, not physical.** Use `ms-`/`me-`,
+  `ps-`/`pe-`, `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
+  `rounded-s`/`rounded-e` — never `ml-`, `pr-`, `left-`, `text-left`. The local
+  `local/logical-direction-classes` ESLint rule enforces this and autofixes, so a
+  consuming app can flip `<html dir>` in `index.html` to `rtl` and have the layout
+  mirror. See RTL readiness.
 - **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
   own terms rather than force-reloading over unsaved work. See hardening.
+
+## RTL readiness
+
+The template ships no physical direction utilities, and `local/logical-direction-classes`
+(`eslint-rules/logical-direction-classes.js`) keeps it that way — a downstream app
+should only ever have to change `dir="ltr"` on `<html>` in `index.html`.
+
+- **The rule is autofixable.** `pnpm lint --fix` rewrites `ml-4` → `ms-4`,
+  `text-left` → `text-start`, `-left-4` → `-start-4`, `rounded-tr-md` →
+  `rounded-se-md`, and so on. It only fires inside `className`/`class` attributes
+  and `cn`/`clsx`/`cva`/`twMerge` calls, so an ordinary string containing `pr-` or
+  `ml-` is never touched.
+- **`shadcn add` writes physical utilities.** The upstream registry is LTR-only —
+  anything past the five primitives already here (dialog, dropdown-menu, select,
+  sheet, table, command) arrives with `pl-8`, `left-2`, `text-left`. Run
+  `pnpm lint --fix` immediately after adding a component; that is the whole point
+  of the rule existing.
+- **Some utilities have no logical form.** `translate-x-*` and `origin-left`/
+  `origin-right` are not reported because Tailwind offers no replacement — they
+  need an explicit `rtl:` variant. Slide-in animation classes
+  (`slide-in-from-left-2`) are likewise left alone.
+- **`space-x-*` and `divide-x-*` are already safe** under Tailwind v4: they compile
+  to `margin-inline-start`/`-end` and `border-inline-start-width`/`-end-width`.
+  This was not true in v3, so don't "fix" them when porting older code in.
+- **Toast position is deliberately physical.** `<Toaster position="bottom-right">`
+  in `__root.tsx` is app chrome, not content flow, and stays pinned regardless of
+  direction. Change it per-app if a design calls for it.
 
 ## Production hardening — gotchas learned under real live-event load
 
