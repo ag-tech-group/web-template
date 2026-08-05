@@ -6,7 +6,6 @@ import globals from "globals"
 import reactHooks from "eslint-plugin-react-hooks"
 import reactRefresh from "eslint-plugin-react-refresh"
 import tseslint from "typescript-eslint"
-import { logicalDirectionClasses } from "./eslint-rules/logical-direction-classes.js"
 
 export default tseslint.config(
   { ignores: ["dist"] },
@@ -20,17 +19,9 @@ export default tseslint.config(
     plugins: {
       "react-hooks": reactHooks,
       "react-refresh": reactRefresh,
-      local: {
-        rules: { "logical-direction-classes": logicalDirectionClasses },
-      },
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      // Keeps the tree RTL-ready: physical direction utilities (`ml-`, `pr-`,
-      // `text-left`) don't mirror under `dir="rtl"`. Reports only — converting
-      // is a judgment call per call site, so it names the replacement rather
-      // than rewriting. Bites after `shadcn add`, whose registry is LTR-only.
-      "local/logical-direction-classes": "error",
       "react-refresh/only-export-components": [
         "warn",
         {

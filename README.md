@@ -261,8 +261,6 @@ MSW handlers are configured in `src/api/handlers.ts`. A default handler for `/v1
 ## Project Structure
 
 ```
-eslint-rules/
-└── logical-direction-classes.js  # Enforces logical (RTL-safe) Tailwind utilities
 src/
 ├── api/
 │   ├── api.ts              # Ky client with token refresh
@@ -307,8 +305,8 @@ npx shadcn-ui@latest add select
 ```
 
 shadcn's registry is LTR-only and ships physical direction utilities (`pl-8`,
-`left-2`, `text-left`). `pnpm lint` will flag them and name the logical
-replacement — convert them on the way in. See [RTL Readiness](#rtl-readiness).
+`left-2`, `text-left`). If you care about [RTL](#rtl-readiness), convert them on
+the way in.
 
 ## RTL Readiness
 
@@ -316,45 +314,26 @@ Every direction-sensitive class in this template is logical (`ms-`/`me-`, `ps-`/
 `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`)
 rather than physical (`ml-`, `pr-`, `left-`, `text-left`). Logical utilities resolve
 against the inline axis, so they mirror automatically when the document direction
-flips — which means switching an app built from this template to RTL is a one-line
-change:
+flips — which means the template starts RTL-clean, and switching an app built from
+it is a one-line change:
 
 ```html
 <!-- index.html -->
 <html lang="ar" dir="rtl"></html>
 ```
 
-A custom ESLint rule, `local/logical-direction-classes`
-(`eslint-rules/logical-direction-classes.js`), keeps it that way. It reports any
-physical utility inside a `className`/`class` attribute or a
-`cn`/`clsx`/`classNames`/`cva`/`twMerge`/`twJoin` call, and names the replacement:
+**Whether to keep that property is your call, and it's worth making early** —
+retrofitting RTL later means auditing every className in the tree. Nothing here
+enforces it; prefer logical utilities as a convention and hold the line in review.
+`shadcn add` is where drift enters, since the upstream registry is LTR-only.
 
-```
-src/components/ui/sheet.tsx
-  42:31  error  `left-0` does not mirror under `dir="rtl"`. Use `start-0`.
-                local/logical-direction-classes
-```
-
-**The rule has no autofix, on purpose.** Whether `ml-4` should become `ms-4`
-depends on whether that element is meant to mirror — a code block, a chart axis or
-a Latin-script logotype should stay physical. Converting by hand means looking at
-each one; add an `eslint-disable-next-line` with a reason where physical is
-correct. Reports land on the offending class's own line, so a multi-line class
-string needs the `/* eslint-disable */ … /* eslint-enable */` block form — a line
-comment can't sit inside a template literal.
-
-Two things the rule intentionally leaves alone:
+Two things not to "fix":
 
 - **`translate-x-*`, `origin-left`, `slide-in-from-left-*`** — Tailwind has no logical
   equivalent for these. If you need them to mirror, use an `rtl:` variant.
 - **`space-x-*` and `divide-x-*`** — already logical under Tailwind v4 (they compile to
   `margin-inline-*` and `border-inline-*-width`). This changed from v3, so don't
   convert them when porting older code in.
-
-It is a backstop, not a proof of RTL-safety. It doesn't see `utils.cn("ml-2")`
-(member-expression callee), a class string assigned to a variable before use, a bare
-`{ className: "ml-4" }` object outside a builder call, or arbitrary properties like
-`[margin-left:4px]`.
 
 ## Logging, Analytics & Feature Flags
 

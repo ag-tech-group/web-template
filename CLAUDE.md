@@ -35,56 +35,43 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   so every consumer sees a total type. See hardening.
 - **Global mutation errors** surface via the `MutationCache` in `main.tsx` (toast);
   opt out per-mutation with `meta: { skipGlobalError: true }`.
-- **Direction utilities must be logical, not physical.** Use `ms-`/`me-`,
-  `ps-`/`pe-`, `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
-  `rounded-s`/`rounded-e` — never `ml-`, `pr-`, `left-`, `text-left`. The local
-  `local/logical-direction-classes` ESLint rule enforces this, so a consuming app
-  can flip `<html dir>` in `index.html` to `rtl` and have the layout mirror.
-  See RTL readiness.
+- **Direction utilities are logical, not physical.** Use `ms-`/`me-`, `ps-`/`pe-`,
+  `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
+  `rounded-s`/`rounded-e` rather than `ml-`, `pr-`, `left-`, `text-left`. Nothing
+  enforces it — see RTL readiness for why that's an adopter's call.
 - **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
   own terms rather than force-reloading over unsaved work. See hardening.
 
-## RTL readiness
+## RTL readiness — a decision to make up front
 
-The template ships no physical direction utilities, and `local/logical-direction-classes`
-(`eslint-rules/logical-direction-classes.js`) keeps it that way — a downstream app
-should only ever have to change `dir="ltr"` on `<html>` in `index.html`.
+The template ships zero physical direction utilities, so it starts RTL-clean and
+`<html dir="ltr">` in `index.html` is the one switch to flip. **Whether to _hold_
+that property is an adopter's call, made early**, because retrofitting it later
+means auditing every className in the tree.
 
-- **The rule reports; it does not autofix.** Deliberate. Whether `ml-4` _should_
-  become `ms-4` depends on whether that element is meant to mirror — a code block,
-  a chart axis or a Latin-script logotype should stay physical, with an
-  `eslint-disable-next-line` and a reason. Converting by hand means looking at each
-  one. An autofix would assert "always mirror" silently across every file it
-  touched. (Reports land on the offending class's own line, so a _multi-line_
-  class string needs the `/* eslint-disable */ … /* eslint-enable */` block form —
-  a line comment can't sit inside a template literal.)
-- **`shadcn add` writes physical utilities.** The upstream registry is LTR-only, so
+- **If the app will never ship RTL,** ignore this. Physical utilities are fine and
+  nothing here objects to them.
+- **If RTL is plausible,** keep using logical utilities and decide how you'll hold
+  the line — code review, or a lint rule. Nothing in the template enforces it: an
+  error-level rule is a policy this template shouldn't impose on every project
+  scaffolded from it, and a partial rule is worse than an explicit convention.
+  A worked implementation (with tests, and the traps that make it harder than it
+  looks) is in the branch history of PR #39 if you want to lift it.
+- **`shadcn add` is where drift enters.** The upstream registry is LTR-only, so
   anything past the five primitives here (button, card, input, label, skeleton)
-  arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in — that is the
-  whole point of the rule existing.
-- **It fires only in class positions.** `className`/`class` attributes and
-  `cn`/`clsx`/`classNames`/`cva`/`twMerge`/`twJoin` calls, and it stops walking at a
-  comparison, a non-builder call or a member access — so `side === "right"`,
-  `someFn("pr-review")` and `styles["left-panel"]` are left alone. Getting this
-  wrong is how a rule like this breaks shadcn's `sheet.tsx`, whose `SheetContent`
-  discriminates on `side === "right"` right next to the class list.
-- **Some utilities have no logical form.** `translate-x-*` and `origin-left`/
-  `origin-right` are not reported because Tailwind offers no replacement — they
-  need an explicit `rtl:` variant. Slide-in animation classes
-  (`slide-in-from-left-2`) are likewise left alone.
+  arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in, or accept the
+  app is LTR-only.
+- **Some utilities have no logical form.** `translate-x-*`, `origin-left`/`-right`
+  and slide-in animation classes have no Tailwind replacement — they need an
+  explicit `rtl:` variant.
 - **`space-x-*` and `divide-x-*` are already safe** under Tailwind v4: they compile
   to `margin-inline-start`/`-end` and `border-inline-start-width`/`-end-width`.
   This was not true in v3, so don't "fix" them when porting older code in.
 - **Toast position is deliberately physical.** `<Toaster position="bottom-right">`
   in `__root.tsx` is app chrome, not content flow, and stays pinned regardless of
   direction. Change it per-app if a design calls for it.
-- **Known blind spots.** The rule doesn't see `utils.cn("ml-2")` (member-expression
-  callee), a class string assigned to a variable before use, a bare
-  `{ className: "ml-4" }` object outside a builder call, or arbitrary properties
-  like `[margin-left:4px]` — that last one is genuinely physical CSS that slips the
-  net. Treat the rule as a backstop, not a proof of RTL-safety.
 
 ## Production hardening — gotchas learned under real live-event load
 

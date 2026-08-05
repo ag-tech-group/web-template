@@ -14,7 +14,7 @@ export default defineConfig({
       VITE_LOG_LEVEL: "warn",
     },
     setupFiles: ["./src/test/setup.ts"],
-    include: ["src/**/*.{test,spec}.{ts,tsx}", "eslint-rules/**/*.test.js"],
+    include: ["src/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
