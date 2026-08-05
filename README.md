@@ -36,6 +36,7 @@ Designed to pair with [api-template](https://github.com/ag-tech-group/api-templa
   - [Test Utilities](#test-utilities)
 - [Project Structure](#project-structure)
 - [Adding Components](#adding-components)
+- [RTL Readiness](#rtl-readiness)
 - [Logging, Analytics & Feature Flags](#logging-analytics--feature-flags)
   - [Logger](#logger)
   - [Analytics](#analytics)
@@ -302,6 +303,37 @@ npx shadcn-ui@latest add dialog
 npx shadcn-ui@latest add select
 # etc.
 ```
+
+shadcn's registry is LTR-only and ships physical direction utilities (`pl-8`,
+`left-2`, `text-left`). If you care about [RTL](#rtl-readiness), convert them on
+the way in.
+
+## RTL Readiness
+
+Every direction-sensitive class in this template is logical (`ms-`/`me-`, `ps-`/`pe-`,
+`start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`)
+rather than physical (`ml-`, `pr-`, `left-`, `text-left`). Logical utilities resolve
+against the inline axis, so they mirror automatically when the document direction
+flips — which means the template starts RTL-clean, and switching an app built from
+it is a one-line change:
+
+```html
+<!-- index.html -->
+<html lang="ar" dir="rtl"></html>
+```
+
+**Whether to keep that property is your call, and it's worth making early** —
+retrofitting RTL later means auditing every className in the tree. Nothing here
+enforces it; prefer logical utilities as a convention and hold the line in review.
+`shadcn add` is where drift enters, since the upstream registry is LTR-only.
+
+Two things not to "fix":
+
+- **`translate-x-*`, `origin-left`, `slide-in-from-left-*`** — Tailwind has no logical
+  equivalent for these. If you need them to mirror, use an `rtl:` variant.
+- **`space-x-*` and `divide-x-*`** — already logical under Tailwind v4 (they compile to
+  `margin-inline-*` and `border-inline-*-width`). This changed from v3, so don't
+  convert them when porting older code in.
 
 ## Logging, Analytics & Feature Flags
 

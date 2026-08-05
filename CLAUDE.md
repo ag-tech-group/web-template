@@ -35,10 +35,43 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   so every consumer sees a total type. See hardening.
 - **Global mutation errors** surface via the `MutationCache` in `main.tsx` (toast);
   opt out per-mutation with `meta: { skipGlobalError: true }`.
+- **Direction utilities are logical, not physical.** Use `ms-`/`me-`, `ps-`/`pe-`,
+  `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
+  `rounded-s`/`rounded-e` rather than `ml-`, `pr-`, `left-`, `text-left`. Nothing
+  enforces it — see RTL readiness for why that's an adopter's call.
 - **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
   own terms rather than force-reloading over unsaved work. See hardening.
+
+## RTL readiness — a decision to make up front
+
+The template ships zero physical direction utilities, so it starts RTL-clean and
+`<html dir="ltr">` in `index.html` is the one switch to flip. **Whether to _hold_
+that property is an adopter's call, made early**, because retrofitting it later
+means auditing every className in the tree.
+
+- **If the app will never ship RTL,** ignore this. Physical utilities are fine and
+  nothing here objects to them.
+- **If RTL is plausible,** keep using logical utilities and decide how you'll hold
+  the line — code review, or a lint rule. Nothing in the template enforces it: an
+  error-level rule is a policy this template shouldn't impose on every project
+  scaffolded from it, and a partial rule is worse than an explicit convention.
+  A worked implementation (with tests, and the traps that make it harder than it
+  looks) is in the branch history of PR #39 if you want to lift it.
+- **`shadcn add` is where drift enters.** The upstream registry is LTR-only, so
+  anything past the five primitives here (button, card, input, label, skeleton)
+  arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in, or accept the
+  app is LTR-only.
+- **Some utilities have no logical form.** `translate-x-*`, `origin-left`/`-right`
+  and slide-in animation classes have no Tailwind replacement — they need an
+  explicit `rtl:` variant.
+- **`space-x-*` and `divide-x-*` are already safe** under Tailwind v4: they compile
+  to `margin-inline-start`/`-end` and `border-inline-start-width`/`-end-width`.
+  This was not true in v3, so don't "fix" them when porting older code in.
+- **Toast position is deliberately physical.** `<Toaster position="bottom-right">`
+  in `__root.tsx` is app chrome, not content flow, and stays pinned regardless of
+  direction. Change it per-app if a design calls for it.
 
 ## Production hardening — gotchas learned under real live-event load
 
