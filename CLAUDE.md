@@ -43,6 +43,16 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
   own terms rather than force-reloading over unsaved work. See hardening.
+- **Web Storage is mocked in `src/test/setup.ts` — don't delete it as
+  redundant.** It looks like something jsdom already provides, and on Node 24 it
+  is. Node 26 ships its own Web Storage and registers both globals, which shadow
+  jsdom's under vitest (`window === globalThis`). `localStorage` becomes
+  `undefined` unless `--localstorage-file` is passed, so readers throw
+  mid-render; `sessionStorage` still works but is Node's `Storage`, not jsdom's,
+  so it fails `instanceof` and `vi.spyOn(Storage.prototype, ...)` silently never
+  fires. The mock is installed on `Storage.prototype` for that reason — a class
+  mock shadows the prototype and reintroduces the silent-spy failure. Fixing it
+  in source doesn't work; the globals have to be replaced in setup.
 
 ## RTL readiness — a decision to make up front
 
