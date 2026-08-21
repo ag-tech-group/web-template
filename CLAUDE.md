@@ -43,6 +43,14 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
   own terms rather than force-reloading over unsaved work. See hardening.
+- **The Node toolchain is pinned, and CI must match it.** `engines` only
+  declares a floor and nothing enforces it, so without a pin a contributor
+  silently runs whatever major their machine has. That surfaces as confusing
+  failures far from the cause — Node 25+ enables the Web Storage API, which
+  shadows jsdom's under vitest and makes `localStorage` `undefined` and
+  `sessionStorage` fail `instanceof Storage`, so tests blow up mid-render or,
+  worse, `vi.spyOn(Storage.prototype, ...)` silently stops firing. Keep the
+  `volta` pin, `.nvmrc`, and the CI `node-version` on the same major.
 
 ## RTL readiness — a decision to make up front
 
