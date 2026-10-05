@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Link } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export function NotFound() {
   return (
@@ -14,9 +14,9 @@ export function NotFound() {
       <p className="text-muted-foreground text-base">
         Sorry, we couldn't find the page you're looking for.
       </p>
-      <Button asChild>
-        <Link to="/">Go back home</Link>
-      </Button>
+      <Link to="/" className={buttonVariants()}>
+        Go back home
+      </Link>
     </div>
   )
 }

@@ -52,7 +52,7 @@ Designed to pair with [api-template](https://github.com/ag-tech-group/api-templa
 - **Vite** - Build tool and dev server
 - **TanStack Router** - Type-safe file-based routing
 - **TanStack Query** - Server state management
-- **shadcn/ui** - Composable component library (Button, Card, Input, Label)
+- **shadcn/ui** - Composable component library on Base UI primitives, Nova style (Button, Card, Input, Label, Skeleton)
 - **Tailwind CSS v4** - Utility-first CSS framework
 - **Zod v4** - TypeScript-first schema validation
 - **ky** - HTTP client with automatic token refresh
@@ -272,7 +272,7 @@ src/
 │       ├── zod/            # Zod schemas
 │       └── mocks/          # MSW mock handlers
 ├── components/
-│   ├── ui/                 # shadcn/ui components (Button, Card, Input, Label)
+│   ├── ui/                 # shadcn/ui components (Button, Card, Input, Label, Skeleton)
 │   ├── theme-provider.tsx  # Dark/light/system theme context
 │   ├── theme-toggle.tsx    # Theme cycle button
 │   ├── error-boundary.tsx  # Default error boundary with retry
@@ -283,7 +283,7 @@ src/
 │   ├── api-errors.ts       # Error message extraction
 │   ├── feature-flags.tsx   # FeatureFlagProvider + useFeatureFlag hook
 │   ├── logger.ts           # Structured logging abstraction
-│   └── utils.ts            # cn() class merge helper
+│   └── utils.ts            # Re-exports cn() from the cn package
 ├── pages/                  # Page components
 ├── routes/                 # TanStack Router file-based routes
 │   ├── __root.tsx          # Root layout (Toaster, devtools, error/404, route tracking)
@@ -296,17 +296,46 @@ src/
 
 ## Adding Components
 
-This template uses shadcn/ui. To add new components:
+This template uses shadcn/ui on [Base UI](https://base-ui.com) primitives with the
+Nova style (`"style": "base-nova"` in `components.json`) — shadcn's defaults for new
+projects. To add new components:
 
 ```bash
-npx shadcn-ui@latest add dialog
-npx shadcn-ui@latest add select
+npx shadcn@latest add dialog
+npx shadcn@latest add select
 # etc.
 ```
 
-shadcn's registry is LTR-only and ships physical direction utilities (`pl-8`,
-`left-2`, `text-left`). If you care about [RTL](#rtl-readiness), convert them on
-the way in.
+Base UI composes with a `render` prop where Radix used `asChild`:
+
+```tsx
+<DialogTrigger render={<Button variant="outline" />}>Open</DialogTrigger>
+```
+
+To style a link as a button, put `buttonVariants()` on the link itself. Don't render
+`<Button>` as a link — Base UI's `Button` always sets `role="button"`, which overrides
+the link's semantics:
+
+```tsx
+<Link to="/" className={buttonVariants({ variant: "outline" })}>
+  Go home
+</Link>
+```
+
+Base UI's `Button` also defaults to `type="button"`, so give a form's submit button an
+explicit `type="submit"`. While `loading`, a `Button` shows a spinner and stays
+focusable — it's `aria-disabled` rather than `disabled`, so keyboard users keep their
+place — and Base UI still blocks clicks, keys and repeat form submissions.
+
+`components.json` also sets `"rtl": true`, so `shadcn add` converts physical direction
+utilities to logical ones on the way in (`pl-2` → `ps-2`) — see
+[RTL Readiness](#rtl-readiness).
+
+Nova is shadcn's compact style. To start from a different look (e.g. Vega, the classic
+shadcn look), run `npx shadcn@latest apply --preset vega` or build a preset on
+[shadcn/create](https://ui.shadcn.com/create). It keeps Base UI and the RTL setting
+but reinstalls the components in `src/components/ui/`, so re-apply local changes
+afterwards (Button's `loading` prop).
 
 ## RTL Readiness
 
@@ -314,18 +343,34 @@ Every direction-sensitive class in this template is logical (`ms-`/`me-`, `ps-`/
 `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`, `rounded-s`/`rounded-e`)
 rather than physical (`ml-`, `pr-`, `left-`, `text-left`). Logical utilities resolve
 against the inline axis, so they mirror automatically when the document direction
-flips — which means the template starts RTL-clean, and switching an app built from
-it is a one-line change:
+flips — which means the template starts RTL-clean. Switching an app built from it
+means flipping the document direction:
 
 ```html
 <!-- index.html -->
 <html lang="ar" dir="rtl"></html>
 ```
 
+and, once the app has interactive Base UI components (menus, popovers, sliders),
+telling them too — they take their direction from `DirectionProvider`, not from the
+`dir` attribute:
+
+```bash
+npx shadcn@latest add direction
+```
+
+```tsx
+<DirectionProvider direction="rtl">{/* app */}</DirectionProvider>
+```
+
 **Whether to keep that property is your call, and it's worth making early** —
 retrofitting RTL later means auditing every className in the tree. Nothing here
-enforces it; prefer logical utilities as a convention and hold the line in review.
-`shadcn add` is where drift enters, since the upstream registry is LTR-only.
+enforces it for code you write; prefer logical utilities as a convention and hold the
+line in review. Components from `shadcn add` are converted on the way in because
+`components.json` sets `"rtl": true` — a rewrite at install time, not a lint rule, and
+logical utilities render identically in LTR. For code that arrives another way,
+`npx shadcn@latest migrate rtl <path>` does the same conversion. An app that will
+never ship RTL can set `"rtl": false`.
 
 Two things not to "fix":
 
