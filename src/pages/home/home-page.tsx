@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 AG Technology Group LLC
 // SPDX-License-Identifier: Apache-2.0
 
-import { Button } from "@/components/ui/button"
+import { buttonVariants } from "@/components/ui/button"
 
 export function HomePage() {
   return (
@@ -12,24 +12,22 @@ export function HomePage() {
         Query, shadcn/ui, and Tailwind CSS v4.
       </p>
       <div className="flex gap-4">
-        <Button variant="link" asChild>
-          <a
-            href="https://tanstack.com/router"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            TanStack Router
-          </a>
-        </Button>
-        <Button variant="link" asChild>
-          <a
-            href="https://ui.shadcn.com"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            shadcn/ui
-          </a>
-        </Button>
+        <a
+          href="https://tanstack.com/router"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "link" })}
+        >
+          TanStack Router
+        </a>
+        <a
+          href="https://ui.shadcn.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className={buttonVariants({ variant: "link" })}
+        >
+          shadcn/ui
+        </a>
       </div>
     </div>
   )

@@ -2,8 +2,8 @@
 
 Vite + React 19 SPA starter: TanStack Router (file-based, code-split routes) +
 TanStack Query, an orval-generated typed API client (hooks + Zod + MSW mocks) over
-a Ky mutator, Tailwind + shadcn/ui, and sonner toasts. See `README.md` for the
-full tour.
+a Ky mutator, Tailwind + shadcn/ui (Base UI primitives, Nova style), and sonner
+toasts. See `README.md` for the full tour.
 
 ## How to run things
 
@@ -35,10 +35,23 @@ spec (only when the `OPENAPI_URL` repo variable is set).
   so every consumer sees a total type. See hardening.
 - **Global mutation errors** surface via the `MutationCache` in `main.tsx` (toast);
   opt out per-mutation with `meta: { skipGlobalError: true }`.
+- **UI primitives are Base UI, so compose with `render`, not `asChild`.** shadcn
+  docs, examples and older code written for Radix use `asChild`; here it's
+  `<DialogTrigger render={<Button />}>`. To style a link as a button, put
+  `buttonVariants()` on the `<Link>`/`<a>` — never `<Button render={<a />}>`, which
+  forces `role="button"` onto the link (the home-page test asserts the link role).
+- **`Button` is not a plain `<button>`.** Base UI defaults it to `type="button"`,
+  so a form's submit button needs an explicit `type="submit"` (the Radix-era
+  version submitted by default). A `loading` Button stays focusable so keyboard
+  users don't lose their place: it's `aria-disabled`, not `disabled`, so style
+  that state with `aria-disabled:` and assert it with
+  `toHaveAttribute("aria-disabled", "true")` — `toBeDisabled()` won't match.
 - **Direction utilities are logical, not physical.** Use `ms-`/`me-`, `ps-`/`pe-`,
   `start-`/`end-`, `text-start`/`text-end`, `border-s`/`border-e`,
-  `rounded-s`/`rounded-e` rather than `ml-`, `pr-`, `left-`, `text-left`. Nothing
-  enforces it — see RTL readiness for why that's an adopter's call.
+  `rounded-s`/`rounded-e` rather than `ml-`, `pr-`, `left-`, `text-left`.
+  `shadcn add` converts on the way in (`"rtl": true` in `components.json`); nothing
+  enforces it for hand-written code — see RTL readiness for why that's an
+  adopter's call.
 - **Stale code-split chunks prompt a reload.** A `vite:preloadError` listener in
   `main.tsx` surfaces a "new version available" toast (sonner) when a deploy has
   replaced the chunk an open tab is importing, letting the user reload on their
@@ -55,9 +68,11 @@ spec (only when the `OPENAPI_URL` repo variable is set).
 ## RTL readiness — a decision to make up front
 
 The template ships zero physical direction utilities, so it starts RTL-clean and
-`<html dir="ltr">` in `index.html` is the one switch to flip. **Whether to _hold_
-that property is an adopter's call, made early**, because retrofitting it later
-means auditing every className in the tree.
+`<html dir="ltr">` in `index.html` is the switch to flip — plus a
+`DirectionProvider` (`shadcn add direction`) once the app has interactive Base UI
+components, which take direction from context rather than the `dir` attribute.
+**Whether to _hold_ that property is an adopter's call, made early**, because
+retrofitting it later means auditing every className in the tree.
 
 - **If the app will never ship RTL,** ignore this. Physical utilities are fine and
   nothing here objects to them.
@@ -67,10 +82,13 @@ means auditing every className in the tree.
   scaffolded from it, and a partial rule is worse than an explicit convention.
   A worked implementation (with tests, and the traps that make it harder than it
   looks) is in the branch history of PR #39 if you want to lift it.
-- **`shadcn add` is where drift enters.** The upstream registry is LTR-only, so
-  anything past the five primitives here (button, card, input, label, skeleton)
-  arrives with `pl-8`, `left-2`, `text-left`. Convert on the way in, or accept the
-  app is LTR-only.
+- **`shadcn add` converts on the way in.** `components.json` sets `"rtl": true`,
+  so the CLI rewrites physical direction utilities to logical ones (`pl-2` →
+  `ps-2`) as components arrive, including third-party registry items. It's an
+  install-time transform, not enforcement: hand-written or pasted code is
+  untouched (`shadcn migrate rtl <path>` converts it on demand), logical output
+  renders identically in LTR, and an app that will never ship RTL can set it to
+  `false`.
 - **Some utilities have no logical form.** `translate-x-*`, `origin-left`/`-right`
   and slide-in animation classes have no Tailwind replacement — they need an
   explicit `rtl:` variant.

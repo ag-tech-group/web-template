@@ -3,7 +3,7 @@
 
 import { Link } from "@tanstack/react-router"
 import type { ErrorComponentProps } from "@tanstack/react-router"
-import { Button } from "@/components/ui/button"
+import { Button, buttonVariants } from "@/components/ui/button"
 import { logger } from "@/lib/logger"
 
 export function ErrorBoundary({ error, reset }: ErrorComponentProps) {
@@ -23,9 +23,9 @@ export function ErrorBoundary({ error, reset }: ErrorComponentProps) {
       </p>
       <div className="flex gap-3">
         <Button onClick={reset}>Try again</Button>
-        <Button variant="outline" asChild>
-          <Link to="/">Go home</Link>
-        </Button>
+        <Link to="/" className={buttonVariants({ variant: "outline" })}>
+          Go home
+        </Link>
       </div>
     </div>
   )
