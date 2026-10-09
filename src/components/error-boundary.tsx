@@ -8,8 +8,9 @@ import { logger } from "@/lib/logger"
 
 export function ErrorBoundary({ error, reset }: ErrorComponentProps) {
   logger.error("Uncaught error in route component", {
-    message: error.message,
-    stack: error.stack,
+    // The router types `error` as unknown: anything can be thrown.
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack : undefined,
   })
 
   return (
